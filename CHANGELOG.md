@@ -1,3 +1,33 @@
+### Release v0.4.2
+* Thêm chức năng lưu lại thông tin mã lỗi của Zalo để tiện việc tra cứu debug của thông báo
+* Sửa lỗi và tối ưu tính năng gửi tin nhắn
+* Sửa lỗi và Tối ưu chức năng chuyển đổi số điện thoại (11 số cho zalo, 9 số cho sms)
+* Thêm api quản lý hàng đợi để quản lý
+* Chỉnh sửa thời gian cho Scheduler chạy từ 6h -> 22h
+* Thêm tính năng Import Excel cho lịch tiêm
+* Thêm tính năng màn hình chờ khi người dùng thao tác ấn đồng bộ
+* Hiển thị thông báo số người đăng kí tiêm được đồng bộ
+* Thêm bộ lọc cho danh sách người đã tiêm
+
+### Release v0.4.1
+* Thêm tính năng lọc danh sách dữ liệu không chuẩn(thiếu các trường bắt buộc khi import từ excel) - issue #85 
+* Thêm danh mục loại thuốc
+* Thêm cột địa bàn cơ sở trong danh sách export
+* Thêm cấu hình gửi zalo cho nhiều đơn vị
+* Đổi tên "Danh sách chứng nhận tiêm chủng" thành "Danh sách đã tiêm" - issue #87
+
+### Release v0.4.0
+* Tính năng quản lý lịch tiêm
+* Gửi tin nhắn SMS thông báo giấy đi đường, lịch hẹn tiêm
+* Bổ sung bộ lọc Tỉnh/Huyện/Xã
+
+### Release v0.3.2
+#### Hotfix:
+* Backend: Sửa cơ chế check trùng người tiêm chủng khi impport từ excel
+* Backend: Sửa các điều kiện tìm kiếm cho API lọc danh sách người tiêm chủng
+* Backend: Sửa lỗi impport đối với các mẫu excel có merge các cột
+* Frontend: Sửa lỗi cập nhật người tiêm chủng không tự chọn địa bàn cơ sơ
+
 ### Release v0.3.1
 #### Hotfix:
 * Frontend: Không tạo được tài khoản 

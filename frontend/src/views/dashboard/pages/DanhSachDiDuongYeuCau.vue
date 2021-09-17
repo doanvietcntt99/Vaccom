@@ -9,7 +9,7 @@
       <base-material-card
         style="margin-top: 20px"
         icon="mdi-clipboard-text"
-        title="DANH SÁCH ĐĂNG KÝ TIÊM MỚI"
+        title="DANH SÁCH YÊU CẦU CẤP GIẤY ĐI ĐƯỜNG"
         class="px-5 py-3"
       >
         <v-btn color="#0072bc" small class="mx-0" @click.stop="showTimKiem" style="position: absolute; right: 40px; top: 15px;">
@@ -19,7 +19,7 @@
           Lọc danh sách
         </v-btn>
         <v-card-text v-if="showAdvanceSearch">
-          <tim-kiem ref="timkiem" v-on:trigger-search="searchDangKyTiem" v-on:trigger-cancel="cancelSearchDangKyTiem"></tim-kiem>
+          <tim-kiem ref="timkiem" form="giaydiduong" typegiaydiduong="dacap" v-on:trigger-search="searchGiayDiDuong" v-on:trigger-cancel="cancelSearchGiayDiDuong"></tim-kiem>
         </v-card-text>
         <v-card-text :class="breakpointName !== 'lg' ? 'px-0' : 'pt-0'">
           <div :class="breakpointName === 'xs' ? 'mb-3' : 'd-flex my-3'">
@@ -30,31 +30,43 @@
               Tổng số: <span style="font-weight: bold; color: green">{{totalItem}}</span> người
             </span>
 
-            <v-btn v-if="userLogin['role_name'] == 'QuanTriHeThong' || userLogin['role_name'] == 'QuanTriCoSo' || userLogin['role_name'] == 'CanBoYTe'" color="orange" small class="mx-0 mr-4" @click.stop="pickFileImport" :loading="processingAction" :disabled="processingAction">
+            <v-btn v-if="userLogin['role_name'] == 'QuanTriHeThong' || userLogin['role_name'] == 'CanBoUBND'" color="orange" small class="mx-0 mr-4" @click.stop="pickFileImport" :loading="processingAction" :disabled="processingAction">
               <v-icon left size="20">
                 mdi-import
               </v-icon>
               Import danh sách
             </v-btn>
-            <v-btn color="#0072bc" small class="mx-0 mr-4" @click.stop="exportDanhSach" :loading="processingAction" :disabled="processingAction">
+            <v-btn color="#0072bc" small class="mx-0 mr-4" @click.stop="goToRegister" :loading="processingAction" :disabled="processingAction">
+              <v-icon left size="20">
+                mdi-plus
+              </v-icon>
+              Thêm đăng ký
+            </v-btn>
+            <!-- <v-btn color="#0072bc" small class="mx-0 mr-4" @click.stop="exportDanhSach" :loading="processingAction" :disabled="processingAction">
               <v-icon left size="20">
                 mdi-export
               </v-icon>
               Xuất danh sách
-            </v-btn>
-            <v-btn color="red" small class="mx-0 mr-4" @click.stop="removeRegistrationStatus('multiple')" :loading="processingAction" :disabled="processingAction">
+            </v-btn> -->
+            <v-btn color="red" small class="mx-0 mr-4" @click.stop="removeRegistrationMultiple('multiple')" :loading="processingAction" :disabled="processingAction">
               <v-icon left size="20">
                 mdi-delete
               </v-icon>
               Xóa đăng ký
-            </v-btn>  
-            <v-btn color="green" small class="mx-0" @click.stop="translateStatus('multiple')" :loading="processingAction" :disabled="processingAction">
-              <v-icon left size="20">
-                mdi-transfer
-              </v-icon>
-              Chuyển đăng ký chính thức
             </v-btn>
-            <input v-if="userLogin['role_name'] == 'QuanTriHeThong' || userLogin['role_name'] == 'QuanTriCoSo' || userLogin['role_name'] == 'CanBoYTe'" type="file" id="fileImport" @input="uploadFileImport($event)" style="display:none">
+            <v-btn color="green" small class="mr-4" @click.stop="translateStatusMultiple()" :loading="processingAction" :disabled="processingAction">
+              <v-icon left size="20">
+                mdi-text-box-check-outline
+              </v-icon>
+              Duyệt giấy đi đường
+            </v-btn>
+            <v-btn color="orange" small class="mx-0" @click.stop="translateStatusAll()" :loading="processingAction" :disabled="processingAction">
+              <v-icon left size="20">
+                mdi-text-box-check-outline
+              </v-icon>
+              Duyệt tất cả
+            </v-btn>
+            <input v-if="userLogin['role_name'] == 'QuanTriHeThong' || userLogin['role_name'] == 'CanBoUBND'" type="file" id="fileImport" @input="uploadFileImport($event)" style="display:none">
           </div>
           
           <v-data-table
@@ -69,32 +81,69 @@
             :loading="loadingData"
             loading-text="Đang tải... "
           >
+            <template v-slot:header.lichLamViec="{ header }">
+              <div>
+                <div class="py-2 px-2" style="border-bottom: 1px solid #dedede;">Thời gian làm việc</div>
+                <v-layout wrap>
+                  <v-flex class="xs12 md6" style="border-right: 1px solid #dedede;">
+                    <p class="py-2 mb-0 px-2">Các ngày</p>
+                  </v-flex>
+                  <v-flex class="xs12 md6">
+                    <p class="py-2 mb-0 px-2">Thời gian</p>
+                  </v-flex>
+                </v-layout>
+              </div>
+            </template>
             <template v-slot:item.index="{ item, index }">
               <div>{{ (page+1) * itemsPerPage - itemsPerPage + index + 1 }}</div>
             </template>
             <template v-slot:item.hoVaTen="{ item, index }">
-              <div :style="item.kiemTraTrung == 2 ? 'background: yellow' : ''" :title="item.kiemTraTrung == 2 ? 'Đăng ký trùng lặp' : ''">
+              <div>
                 <p class="mb-0" style="font-weight: 500;">{{ item.hoVaTen}}</p>
-                <p class="mb-2" style="color: blue">Ngày sinh: {{ item.ngaySinh }}</p>
               </div>
             </template>
             <template v-slot:item.cmtcccd="{ item, index }">
                 <p class="mb-2">{{ item.cmtcccd }}</p>
             </template>
-            <template v-slot:item.nhomDoiTuong="{ item, index }">
-                <p class="mb-2">{{ item.nhomDoiTuong }}</p>
-            </template>
             <template v-slot:item.soDienThoai="{ item, index }">
                 <p class="mb-2">{{ item.soDienThoai }}</p>
             </template>
-            <template v-slot:item.diaChiNoiO="{ item, index }">
-                <p class="mb-2">{{ item.diaChiNoiO}} - {{item.phuongXaTen}} - {{item.quanHuyenTen}} - {{item.tinhThanhTen}}</p>
+            <template v-slot:item.noiODiaChi="{ item, index }">
+                <p class="mb-2">{{ item.noiODiaChi}}
+                  <span v-if="item.noiOPhuongXaTen">, {{item.noiOPhuongXaTen}}</span>
+                  <span v-if="item.noiOQuanHuyenTen"> - {{item.noiOQuanHuyenTen}}</span>
+                  <span v-if="item.noiOTinhThanhTen"> - {{item.noiOTinhThanhTen}}</span>
+                </p>
             </template>
-            <template v-slot:item.ngayDangKi="{ item, index }">
-                <p class="mb-2">{{ item.ngayDangKi }}</p>
+            <template v-slot:item.noiCtDiaChi="{ item, index }">
+                <p class="mb-2">{{ item.noiCtDiaChi }}
+                  <span v-if="item.noiCtPhuongXaTen">, {{item.noiCtPhuongXaTen}}</span>
+                  <span v-if="item.noiCtQuanHuyenTen"> - {{item.noiCtQuanHuyenTen}}</span>
+                  <span v-if="item.noiCtTinhThanhTen"> - {{item.noiCtTinhThanhTen}}</span>
+                </p>
+            </template>
+            <template v-slot:item.noiCtTenCoQuan="{ item, index }">
+                <p class="mb-2">{{ item.noiCtTenCoQuan }}</p>
+            </template>
+            <template v-slot:item.lichLamViec="{ item, index }">
+              <div style="width: 100%;min-width: 250px;height: 100%;">
+                <v-layout wrap style="height: 100%;">
+                  <v-flex class="xs12 md6" style="border-right: 1px solid #dedede;">
+                    <p class="py-2 mb-0 pr-2" style="color:green;">{{translateLichNgay(item.lichLamViec)}}</p>
+                  </v-flex>
+                  <v-flex class="xs12 md6">
+                    <p class="py-2 mb-0">Từ: <span style="color:green;">{{translateLichGio(item.lichLamViec, 'start')}}</span></p>
+                    <p class="py-0 mb-0">Đến: <span style="color:blue;">{{translateLichGio(item.lichLamViec, 'end')}}</span></p>
+                  </v-flex>
+                </v-layout>
+              </div>
+            </template>
+            <template v-slot:item.thoiHan="{ item, index }">
+                <p class="mb-2">Từ ngày: <span style="color:green;">{{ item.ngayCap }}</span></p>
+                <p class="mb-2" v-if="item.thoiHan">Đến ngày: <span style="color:blue;">{{ item.thoiHan }}</span></p>
             </template>
             <template v-slot:item.action="{ item }">
-              <div style="width: 150px">
+              <div style="width: 130px">
                 <v-tooltip top>
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn @click="editRegistration(item)" color="blue" text icon class="" v-bind="attrs" v-on="on">
@@ -114,10 +163,10 @@
                 <v-tooltip top>
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn @click="translateStatus(item)" color="green" text icon class="" v-bind="attrs" v-on="on">
-                      <v-icon size="22">mdi-transfer</v-icon>
+                      <v-icon size="22">mdi-text-box-check-outline</v-icon>
                     </v-btn>
                   </template>
-                  <span>Chuyển chính thức</span>
+                  <span>Duyệt giấy đi đường</span>
                 </v-tooltip>
               </div>
               
@@ -199,6 +248,7 @@
         showAdvanceSearch: false,
         selected: [],
         dataInputSearch: '',
+        dataSearchOutPut: '',
         headers: [
           {
             sortable: false,
@@ -220,27 +270,46 @@
           },
           {
             sortable: false,
-            text: 'Mã nhóm đối tượng',
-            align: 'left',
-            value: 'nhomDoiTuong'
-          },
-          {
-            sortable: false,
             text: 'Số điện thoại',
             align: 'left',
             value: 'soDienThoai'
           },
           {
             sortable: false,
-            text: 'Địa chỉ',
+            text: 'Địa chỉ nơi ở/ cư trú',
             align: 'left',
-            value: 'diaChiNoiO'
+            value: 'noiODiaChi'
           },
           {
             sortable: false,
-            text: 'Ngày đăng ký tiêm',
+            text: 'Địa điểm làm việc',
+            align: 'left',
+            value: 'noiCtDiaChi'
+          },
+          {
+            sortable: false,
+            text: 'Đơn vị/ công ty làm việc',
+            align: 'left',
+            value: 'noiCtTenCoQuan'
+          },
+          {
+            sortable: false,
+            text: 'Lịch làm việc',
             align: 'center',
-            value: 'ngayDangKi'
+            value: 'lichLamViec',
+            class: 'px-0'
+          },
+          {
+            sortable: false,
+            text: 'Thời hạn sử dụng',
+            align: 'center',
+            value: 'thoiHan'
+          },
+          {
+            sortable: false,
+            text: 'Ghi chú',
+            align: 'center',
+            value: 'ghiChu'
           },
           {
             sortable: false,
@@ -253,12 +322,8 @@
     },
     created () {
       let vm = this
-      vm.$store.commit('SET_INDEXTAB', 1)
+      vm.$store.commit('SET_INDEXTAB', 3)
       let isSigned = this.$store.getters.getIsSigned
-      if (!isSigned) {
-        vm.$router.push({ path: '/login?redirect=/pages/danh-sach-dang-ky-tiem-moi' })
-        return
-      }
       vm.getDanhSachDangKyMoi(0)
     },
     computed: {
@@ -267,7 +332,53 @@
       },
     },
     methods: {
-      searchDangKyTiem (data) {
+      translateLichNgay (data) {
+        try {
+          let input = JSON.parse(data)
+          let dataOut = ''
+          let ngayTuan = input['ngayTuan']
+          let ngayThang = input['ngayThang']
+          if (ngayTuan && ngayTuan.length) {
+            let ngayTuanString = ''
+            ngayTuan.forEach(element => {
+              let day = ''
+              if (element == 0) {
+                day = 'Chủ nhật, '
+              } else {
+                day = 'Thứ ' + element + ', '
+              }
+              ngayTuanString += day
+            })
+            ngayTuanString = ngayTuanString.trim().substring(0, ngayTuanString.trim().length - 1)
+            dataOut += ngayTuanString
+          }
+          if (ngayThang && ngayThang.length) {
+            dataOut = dataOut + ' - Các ngày: ' + ngayThang.toString().replace(/,/g, "; ")
+          }
+          return dataOut
+        } catch (error) {
+          return ''
+        }
+      },
+      translateLichGio (data, type) {
+        try {
+          let input = JSON.parse(data)
+          let timeStart = input['tuGio'] ? input['tuGio'].split(':')[0] + 'h' + input['tuGio'].split(':')[1] : ''
+          let endStart = input['denGio'] ? input['denGio'].split(':')[0] + 'h' + input['denGio'].split(':')[1] : ''
+          if (type === 'start') {
+            return timeStart
+          } else {
+            return endStart
+          }
+        } catch (error) {
+          return ''
+        }
+      },
+      goToRegister () {
+        let vm = this
+        vm.$router.push({ path: '/pages/dang-ky-di-duong/0' })
+      },
+      searchGiayDiDuong (data) {
         let vm = this
         console.log('dataSearch', data)
         vm.dataInputSearch = data
@@ -276,7 +387,7 @@
         vm.pageCount = 0
         vm.getDanhSachDangKyMoi(0, data)
       },
-      cancelSearchDangKyTiem (data) {
+      cancelSearchGiayDiDuong (data) {
         let vm = this
         vm.showAdvanceSearch = false
         vm.dataInputSearch = data
@@ -295,17 +406,14 @@
         let filter = {
           page: pageIn,
           size: vm.itemsPerPage,
-          tinhtrangdangky: 0,
           cmtcccd: dataSearch && dataSearch['CMTCCCD'] ? dataSearch['CMTCCCD'] : '',
-          nhomdoituong: dataSearch && dataSearch['NhomDoiTuong'] ? dataSearch['NhomDoiTuong'] : '',
-          ngaydangki: dataSearch && dataSearch['NgayDangKi'] ? dataSearch['NgayDangKi'] : '',
-          hovaten: dataSearch && dataSearch['HoVaTen'] ? dataSearch['HoVaTen'] : '',
-          diabancosoid: dataSearch && dataSearch.hasOwnProperty('DiaBanCoSo_ID') ? dataSearch['DiaBanCoSo_ID'] : '',
-          cosoytema: dataSearch && dataSearch['CoSoYTe_Ma'] ? dataSearch['CoSoYTe_Ma'] : '',
-          kiemtratrung: dataSearch && dataSearch['KiemTraTrung'] ? dataSearch['KiemTraTrung'] : '',
-          typeSearch: 'danhsachdangkymoi'
+          hoVaTen: dataSearch && dataSearch['HoVaTen'] ? dataSearch['HoVaTen'] : '',
+          noiCtTenCoQuan: dataSearch && dataSearch['NoiCtTenCoQuan'] ? dataSearch['NoiCtTenCoQuan'] : '',
+          uyBanNhanDanID: dataSearch && dataSearch.hasOwnProperty('UyBanNhanDanID') ? dataSearch['UyBanNhanDanID'] : '',
+          status: 0,
+          typeSearch: 'giaydiduong'
         }
-        vm.$store.dispatch('getNguoiTiemChung', filter).then(function(result) {
+        vm.$store.dispatch('getGiayDiDuong', filter).then(function(result) {
           vm.loadingData = false
           if (result) {
             vm.items = result.hasOwnProperty('data') ? result.data : []
@@ -321,39 +429,61 @@
           vm.loadingData = false
         })
       },
-      translateStatus (item, type) {
+      translateStatus (item) {
+        let vm = this
+        let filter = {
+          data: Object.assign(item, {status: 1})
+        }
+        vm.$store.dispatch('duyetGiayDiDuong', filter).then(function (result) {
+          vm.$store.commit('SHOW_SNACKBAR', {
+            show: true,
+            text: 'Duyệt thành công',
+            color: 'success',
+          })
+          vm.processingAction = false
+          vm.getDanhSachDangKyMoi(0)
+        }).catch(function () {
+          vm.$store.commit('SHOW_SNACKBAR', {
+            show: true,
+            text: 'Duyệt không thành công',
+            color: 'error',
+          })
+          vm.processingAction = false
+        })
+        
+      },
+      translateStatusMultiple () {
         let vm = this
         let arrIds = ''
-        if (item === 'multiple') {
-          if (vm.selected.length === 0) {
-            vm.$store.commit('SHOW_SNACKBAR', {
-              show: true,
-              text: 'Vui lòng chọn người đăng ký muốn chuyển',
-              color: 'success',
-            })
-            return
-          }
-          arrIds = vm.selected.map(function(item) {
-            return item['id']
-          }).toString()
-          console.log('selected', arrIds)
-        }
-        let filter = {
-          data: {
-            ids: item === 'multiple' ? arrIds : String(item.id),
-            TinhTrangDangKi: type === 'remove' ? 2 : 1
-          }
-        }
-        if (!filter['data']['ids']) {
+        if (vm.selected.length === 0) {
+          vm.$store.commit('SHOW_SNACKBAR', {
+            show: true,
+            text: 'Vui lòng chọn người muốn cấp giấy đi đường',
+            color: 'error',
+          })
           return
         }
-        let textConfirm = type === 'remove' ? 'Bạn có chắc chắn muốn Rút đăng ký' : 'Bạn có chắc chắn muốn Chuyển đăng ký'
+        arrIds = vm.selected.map(function(item) {
+          return item['id']
+        })
+          
+        let filter = {
+          data: {
+            ids: arrIds,
+            status: 1
+          }
+        }
+        console.log('filter', filter)
+        if (!filter['data']['ids'] || filter['data']['ids'].length == 0) {
+          return
+        }
+        let textConfirm = 'Bạn có chắc chắn thực hiện thao tác này?'
         let x = confirm(textConfirm)
         if (x) {
-          vm.$store.dispatch('updateRegistrationStatus', filter).then(function (result) {
+          vm.$store.dispatch('duyetNhieuGiayDiDuong', filter).then(function (result) {
             vm.$store.commit('SHOW_SNACKBAR', {
               show: true,
-              text: type === 'remove' ? 'Rút thành công' : 'Chuyển thành công',
+              text: 'Duyệt thành công',
               color: 'success',
             })
             vm.getDanhSachDangKyMoi(0)
@@ -361,14 +491,76 @@
           }).catch(function () {
             vm.$store.commit('SHOW_SNACKBAR', {
               show: true,
-              text: type === 'remove' ? 'Rút thất bại' : 'Chuyển thất bại',
+              text: 'Duyệt thất bại',
               color: 'error',
             })
           })
         }
-        
+      },
+      translateStatusAll () {
+        let vm = this
+        if (vm.showAdvanceSearch) {
+          vm.dataSearchOutPut = vm.$refs.timkiem.getDataOutPut()
+          console.log('dataSearch', vm.dataSearchOutPut)     
+        }
+        let filter = {
+          statusUpdate: 1,
+          cmtcccd: vm.dataSearchOutPut && vm.dataSearchOutPut['CMTCCCD'] ? vm.dataSearchOutPut['CMTCCCD'] : '',
+          hoVaTen: vm.dataSearchOutPut && vm.dataSearchOutPut['HoVaTen'] ? vm.dataSearchOutPut['HoVaTen'] : '',
+          noiCtTenCoQuan: vm.dataSearchOutPut && vm.dataSearchOutPut['NoiCtTenCoQuan'] ? vm.dataSearchOutPut['NoiCtTenCoQuan'] : '',
+          uyBanNhanDanID: vm.dataSearchOutPut && vm.dataSearchOutPut.hasOwnProperty('UyBanNhanDanID') ? vm.dataSearchOutPut['UyBanNhanDanID'] : '',
+          status: 0
+        }
+        if (!vm.totalItem) {
+          return
+        }
+        let textConfirm = 'Bạn có chắc chắn duyệt tất cả ' + vm.totalItem + ' giấy đi đường?'
+        let x = confirm(textConfirm)
+        if (x) {
+          vm.$store.dispatch('updateAllGiayDiDuong', filter).then(function (result) {
+            vm.$store.commit('SHOW_SNACKBAR', {
+              show: true,
+              text: 'Duyệt thành công',
+              color: 'success',
+            })
+            vm.getDanhSachDangKyMoi(0)
+            vm.selected = []
+          }).catch(function () {
+            vm.$store.commit('SHOW_SNACKBAR', {
+              show: true,
+              text: 'Duyệt thất bại',
+              color: 'error',
+            })
+          })
+        }
       },
       removeRegistrationStatus (item) {
+        let vm = this
+        let filter = {
+          id: item.id,
+          data: item
+        }
+        let textConfirm = 'Bạn có chắc chắn muốn xóa đăng ký'
+        let x = confirm(textConfirm)
+        if (x) {
+          vm.$store.dispatch('removeGiayDiDuong', filter).then(function (result) {
+            vm.$store.commit('SHOW_SNACKBAR', {
+              show: true,
+              text: 'Xóa thành công',
+              color: 'success',
+            })
+            vm.getDanhSachDangKyMoi(0)
+            vm.selected = []
+          }).catch(function () {
+            vm.$store.commit('SHOW_SNACKBAR', {
+              show: true,
+              text: 'Xóa thất bại',
+              color: 'error',
+            })
+          })
+        }
+      },
+      removeRegistrationMultiple (item) {
         let vm = this
         let arrIds = ''
         if (item === 'multiple') {
@@ -382,21 +574,21 @@
           }
           arrIds = vm.selected.map(function(item) {
             return item['id']
-          }).toString()
-          console.log('selected', arrIds)
+          })
+          
         }
         let filter = {
           data: {
             ids: item === 'multiple' ? arrIds : String(item.id)
           }
         }
-        if (!filter['data']['ids']) {
+        if (!filter['data']['ids'] || filter['data']['ids'].length == 0) {
           return
         }
         let textConfirm = 'Bạn có chắc chắn muốn xóa đăng ký'
         let x = confirm(textConfirm)
         if (x) {
-          vm.$store.dispatch('removeRegistrationStatus', filter).then(function (result) {
+          vm.$store.dispatch('removeMultipleGiayDiDuong', filter).then(function (result) {
             vm.$store.commit('SHOW_SNACKBAR', {
               show: true,
               text: 'Xóa thành công',
@@ -424,12 +616,11 @@
         vm.processingAction = true
         let filter = {
           file: file,
-          sheetAt:0,
           startCol:0,
-          endCol:16,
-          startRow:8,
+          endCol:11,
+          startRow:4,
           endRow:1000,
-          table:'nguoitiemchung'
+          table:'giaydiduong'
         }
         vm.$store.dispatch('importDanhSach', filter).then(function(result) {
           vm.processingAction = false
@@ -438,6 +629,7 @@
             text: 'Import danh sách thành công',
             color: 'success',
           })
+          vm.getDanhSachDangKyMoi(0)
         }).catch(function () {
           vm.processingAction = false
           vm.$store.commit('SHOW_SNACKBAR', {
@@ -478,8 +670,8 @@
       },
       editRegistration (item) {
         let vm = this
-        vm.$store.commit('SET_RegistrationUpdate', item)
-        vm.$router.push('/pages/dang-ky-tiem-moi/' + item.id)
+        vm.$store.commit('SET_GiayDiDuongUpdate', item)
+        vm.$router.push('/pages/dang-ky-di-duong/' + item.id)
       },
       parseDate (date) {
         if (!date) {

@@ -10,6 +10,7 @@ import org.vaccom.vcmgt.action.NguoiDungAction;
 import org.vaccom.vcmgt.action.impl.NguoiDungActionImpl;
 import org.vaccom.vcmgt.entity.NguoiDung;
 import org.vaccom.vcmgt.property.FileStorageProperties;
+import org.vaccom.vcmgt.repository.CongDanRepository;
 
 
 import java.io.IOException;
@@ -20,9 +21,6 @@ import java.io.IOException;
     FileStorageProperties.class
 })
 public class VaccomApplication {
-
-	@Autowired
-	private NguoiDungAction nguoiDungAction;
 
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(VaccomApplication.class, args);

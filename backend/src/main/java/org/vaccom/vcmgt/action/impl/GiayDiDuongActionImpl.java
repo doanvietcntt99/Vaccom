@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.vaccom.vcmgt.action.GiayDiDuongAction;
 import org.vaccom.vcmgt.controler.AuthenticationControler;
 import org.vaccom.vcmgt.dto.GiayDiDuongDto;
+import org.vaccom.vcmgt.dto.ResultSearchDto;
 import org.vaccom.vcmgt.entity.GiayDiDuong;
 import org.vaccom.vcmgt.exception.ActionException;
 import org.vaccom.vcmgt.service.GiayDiDuongService;
@@ -34,26 +35,30 @@ public class GiayDiDuongActionImpl implements GiayDiDuongAction {
     public GiayDiDuong create(GiayDiDuongDto giayDiDuongDto) throws Exception {
 
         if(giayDiDuongDto.hoVaTen == null || giayDiDuongDto.hoVaTen.isEmpty()) {
-            throw new ActionException(MessageUtil.getVNMessageText("hovaten.empty"), HttpStatus.NOT_ACCEPTABLE.value());
+            return null;
         }
 
         String checkSum = transformService.base64(giayDiDuongDto);
         GiayDiDuong giayDiDuongExisted = giayDiDuongService.findByChecksum(checkSum);
 
         if(giayDiDuongExisted != null) {
-            _log.warn("giay di duong da ton tai");
             return null;
         }
 
         GiayDiDuong giayDiDuong = new GiayDiDuong();
         transformService.paperTraffic(giayDiDuong, giayDiDuongDto, true);
-        giayDiDuong.setMaQR(VaccomUtil.generateQRCode("ntc", 6));
         return giayDiDuongService.save(giayDiDuong);
     }
 
     @Override
     public GiayDiDuong update(GiayDiDuong giayDiDuong, GiayDiDuongDto giayDiDuongDto) throws Exception {
         transformService.paperTraffic(giayDiDuong, giayDiDuongDto, false);
+        return giayDiDuongService.save(giayDiDuong);
+    }
+
+    @Override
+    public GiayDiDuong updateStatus(GiayDiDuong giayDiDuong, int statusNew) throws Exception {
+        giayDiDuong.setStatus(statusNew);
         return giayDiDuongService.save(giayDiDuong);
     }
 
@@ -95,6 +100,11 @@ public class GiayDiDuongActionImpl implements GiayDiDuongAction {
     @Override
     public long countAll() {
         return 0;
+    }
+
+    @Override
+    public ResultSearchDto<GiayDiDuong> search(GiayDiDuongDto giayDiDuongDto) {
+        return giayDiDuongService.search(giayDiDuongDto);
     }
 
     @Override

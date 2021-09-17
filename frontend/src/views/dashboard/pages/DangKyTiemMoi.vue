@@ -334,13 +334,11 @@
                   md="12"
                   class="pb-0"
                 >
-                  <div class="mb-2">Cơ sở y tế <span style="color:red">(*)</span></div>
+                  <div class="mb-2">Cơ sở y tế</div>
                   <v-autocomplete
                       hide-no-data
                       :items="listCoSoYTe"
                       v-model="coSoYTe"
-                      :rules="required"
-                      required
                       item-text="tenCoSo"
                       item-value="maCoSo"
                       outlined
@@ -377,7 +375,7 @@
                   md="6"
                   class="pb-0"
                 >
-                  <div class="mb-2">Nhóm đối tượng <span style="color:red">(*)</span></div>
+                  <div class="mb-2">Nhóm đối tượng</div>
                   <v-autocomplete
                       ref="chondoituong"
                       :items="listDoiTuong"
@@ -386,8 +384,6 @@
                       item-text="doiTuongMoTa"
                       item-value="id"
                       hide-no-data
-                      :rules="required"
-                      required
                       outlined
                       dense
                       hide-details="auto"    
@@ -826,16 +822,16 @@
       vm.getTinhThanh()
       if (String(vm.uid) === '0') {
         vm.typeAction = 'add'
+        try {
+          let data = localStorage.getItem('user')
+          if (data && JSON.parse(data)) {
+            vm.applicantInfo['DiaBanCoSo_ID'] = JSON.parse(data)['diaBanCoSoId']
+          }
+        } catch (error) {
+        }
       } else {
         vm.typeAction = 'update'
         vm.bindDataUpdate()
-      }
-      try {
-        let data = localStorage.getItem('user')
-        if (data && JSON.parse(data)) {
-          vm.applicantInfo['DiaBanCoSo_ID'] = JSON.parse(data)['diaBanCoSoId']
-        }
-      } catch (error) {
       }
     },
     methods: {
@@ -1005,7 +1001,7 @@
         vm.applicantInfo['CMTCCCD'] = vm.registrationUpdate.cmtcccd
         vm.coSoYTe = vm.registrationUpdate.coSoYTeMa
         vm.applicantInfo.DanToc_Ma = vm.registrationUpdate.danTocMa
-        vm.applicantInfo.DiaBanCoSo_ID = vm.registrationUpdate.diaBanCoSoID
+        vm.applicantInfo.DiaBanCoSo_ID = vm.registrationUpdate.diaBanCoSoId
         vm.applicantInfo.DiaChiNoiO = vm.registrationUpdate.diaChiNoiO
         vm.applicantInfo.DonViCongTac = vm.registrationUpdate.donViCongTac
         vm.applicantInfo.Email = vm.registrationUpdate.email
@@ -1115,16 +1111,18 @@
         vm.$store.dispatch('getDiaBanCoSo', filter).then(function (result) {
           if (result.hasOwnProperty('data') && result.data.length) {
             vm.listDiaBan = result.data
-            try {
-              let data = localStorage.getItem('user')
-              let diaBanUser = JSON.parse(data)['diaBanCoSoId']
-              let obj = vm.listDiaBan.find(function (item) {
-                return item.id == diaBanUser
-              })
-              if (obj) {
-                vm.applicantInfo['DiaChiNoiO'] = obj['tenDiaBan']
+            if (vm.uid == 0) {
+              try {
+                let data = localStorage.getItem('user')
+                let diaBanUser = JSON.parse(data)['diaBanCoSoId']
+                let obj = vm.listDiaBan.find(function (item) {
+                  return item.id == diaBanUser
+                })
+                if (obj) {
+                  vm.applicantInfo['DiaChiNoiO'] = obj['tenDiaBan']
+                }
+              } catch (error) {
               }
-            } catch (error) {
             }
           }
         })

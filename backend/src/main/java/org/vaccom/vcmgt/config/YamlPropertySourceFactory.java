@@ -9,6 +9,14 @@ import org.springframework.core.io.support.PropertySourceFactory;
 
 import java.io.IOException;
 
+/**
+ * Factory to support loading properties from YML <br>
+ * IMPLEMENTATION NOTE: Use this factory to load email config which has multiline formats which sucks in properties format
+ *
+ * @author TrinhNX
+ * @since 8/29/2021
+ */
+
 public final class YamlPropertySourceFactory implements PropertySourceFactory {
     @Override
     public PropertySource<?> createPropertySource(String s, EncodedResource encodedResource) throws IOException {

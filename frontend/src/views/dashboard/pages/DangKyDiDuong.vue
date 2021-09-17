@@ -13,7 +13,7 @@
         <base-material-card
           style="margin-top: 20px"
           icon="mdi-clipboard-text"
-          :title="String(uid) === '0' ? 'ĐĂNG KÝ TIÊM MỚI' : 'CẬP NHẬT THÔNG TIN NGƯỜI ĐĂNG KÝ'"
+          :title="String(uid) === '0' ? 'ĐĂNG KÝ CẤP GIẤY ĐI ĐƯỜNG' : 'CẬP NHẬT THÔNG TIN NGƯỜI ĐĂNG KÝ'"
           class="px-5 py-3"
         >
           <v-btn id="xemdanhsach" class="mx-0" dark color="#0072bc" @click.stop="showDanhSach" style="position: absolute; right: 20px; top: 15px;">
@@ -46,7 +46,7 @@
                 >
                   <div class="mb-2">Họ và tên <span style="color:red">(*)</span></div>
                   <v-text-field
-                    v-model="applicantInfo['HoVaTen']"
+                    v-model="applicantInfo['hoVaTen']"
                     :rules="required"
                     required
                     outlined
@@ -55,75 +55,8 @@
                     hide-details="auto"
                     @blur="formatHoTen"
                     id="hoten"
-                    @keyup.enter="nextFocus('gioitinh')"
-                    autofocus
-                  ></v-text-field>
-                </v-col>
-                <v-col
-                  cols="12"
-                  md="3"
-                  class="pb-0"
-                >
-                  <div class="mb-2">Giới tính </div>
-                  <v-autocomplete
-                      :items="listGioiTinh"
-                      placeholder="Giới tính"
-                      v-model="applicantInfo['GioiTinh']"
-                      item-text="name"
-                      item-value="value"
-                      hide-no-data
-                      outlined
-                      dense
-                      hide-details="auto"
-                      id="gioitinh"
-                      @keyup.enter="nextFocus('ngaysinh')"
-                  ></v-autocomplete>
-                </v-col>
-                <v-col
-                  cols="12"
-                  md="3"
-                  class="pb-0"
-                >
-                  <div class="mb-2">Ngày sinh <span style="color:red">(*)</span></div>
-                  <!-- <v-menu
-                    ref="menuApplicantIdDate"
-                    :close-on-content-click="false"
-                    v-model="menuApplicantIdDate"
-                    :nudge-right="40"
-                    lazy
-                    transition="scale-transition"
-                    offset-y
-                    full-width
-                    max-width="290px"
-                    min-width="290px"
-                  >
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-text-field
-                        :rules="requiredBirthDate"
-                        v-model="applicantDateFormatted"
-                        placeholder="dd/mm/yyyy"
-                        @blur="bithDate = parseDate(applicantDateFormatted)"
-                        dense
-                        
-                        hide-details="auto"
-                        outlined
-                        v-bind="attrs"
-                        v-on="on"
-                      ></v-text-field>
-                    </template>
-                    <v-date-picker min="1900-01-01" :max="getMaxdate()" ref="picker"
-                    :first-day-of-week="1" locale="vi" v-model="birthDate" no-title @input="menuApplicantIdDate = false"></v-date-picker>
-                  </v-menu> -->
-                  <v-text-field
-                    :rules="requiredBirthDate"
-                    v-model="applicantDateFormatted"
-                    placeholder="dd/mm/yyyy, ddmmyyyy"
-                    @blur="formatBirthDate"
-                    dense
-                    hide-details="auto"
-                    outlined
-                    id="ngaysinh"
                     @keyup.enter="nextFocus('cccd')"
+                    autofocus
                   ></v-text-field>
                 </v-col>
                 
@@ -134,35 +67,21 @@
                 >
                   <div class="mb-2">Số CMND/CCCD <span style="color:red">(*)</span></div>
                   <v-text-field
-                    v-model="applicantInfo['CMTCCCD']"
-                    :rules="requiredCredit"
+                    v-model="applicantInfo['cmtcccd']"
+                    :rules="!giayToLoaiKhac ? requiredCredit : required"
                     required
                     outlined
                     placeholder="Số CMND/CCCD"
                     dense
                     id="cccd"
                     hide-details="auto"
-                    @keyup.enter="nextFocus('bhyt')"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-              <!-- row 2 -->
-              <v-row>
-                <v-col
-                  cols="12"
-                  md="3"
-                  class="pb-0"
-                >
-                  <div class="mb-2">Số thẻ BHYT</div>
-                  <v-text-field
-                    v-model="applicantInfo['SoTheBHYT']"
-                    outlined
-                    placeholder="Số thẻ bảo hiểm y tế"
-                    dense
-                    hide-details="auto"
-                    id="bhyt"
                     @keyup.enter="nextFocus('sdt')"
                   ></v-text-field>
+                  <v-checkbox
+                  class="mt-0 checkboxCmt"
+                    v-model="giayToLoaiKhac"
+                    label="Giấy tờ loại khác"
+                  ></v-checkbox>
                 </v-col>
                 <v-col
                   cols="12"
@@ -171,7 +90,7 @@
                 >
                   <div class="mb-2">Số điện thoại <span style="color:red">(*)</span></div>
                   <v-text-field
-                    v-model="applicantInfo['SoDienThoai']"
+                    v-model="applicantInfo['soDienThoai']"
                     :rules="requiredTelNo"
                     required
                     outlined
@@ -182,33 +101,16 @@
                     @keyup.enter="nextFocus('email')"
                   ></v-text-field>
                 </v-col>
-                <!-- <v-col
+                <v-col
                   cols="12"
                   md="3"
                   class="pb-0"
                 >
-                  <div class="mb-2">Số điện thoại sử dụng Zalo</div>
-                  <v-text-field
-                    v-model="applicantInfo['SoDienThoaiZaLo']"
-                    :rules="[telNo]"
-                    outlined
-                    placeholder="Số điện thoại sử dụng Zalo"
-                    dense
-                    hide-details="auto"
-                    id="sdtzalo"
-                    @keyup.enter="nextFocus('email')"
-                  ></v-text-field>
-                </v-col> -->
-                <v-col
-                  cols="12"
-                  md="6"
-                  class="pb-0"
-                >
                   <div class="mb-2">Email</div>
                   <v-text-field
-                    v-model="applicantInfo['Email']"
+                    v-model="applicantInfo['email']"
                     outlined
-                    placeholder="Email"
+                    placeholder="email"
                     dense
                     id="email"
                     hide-details="auto"
@@ -221,7 +123,24 @@
               <v-row>
                 <v-col
                   cols="12"
-                  md="3"
+                  class="py-0"
+                >
+                  <div class="mb-2">Địa chỉ nơi ở/ cư trú <span style="color:red">(*)</span></div>
+                  <v-text-field
+                    v-model="applicantInfo['noiODiaChi']"
+                    :rules="required"
+                    required
+                    outlined
+                    placeholder="Số nhà, đường, tổ dân phố, khóm ấp, thôn bản…"
+                    dense
+                    id="noio"
+                    hide-details="auto"
+                    @keyup.enter="nextFocus('tinhthanh')"
+                  ></v-text-field>
+                </v-col>
+                <v-col
+                  cols="12"
+                  md="4"
                   class="pb-0"
                 >
                   <div class="mb-2">Tỉnh/ Thành phố <span style="color:red">(*)</span></div>
@@ -243,29 +162,29 @@
                 </v-col>
                 <v-col
                   cols="12"
-                  md="3"
+                  md="4"
                   class="pb-0"
                 >
                   <div class="mb-2">Quận/ Huyện <span style="color:red">(*)</span></div>
                   <v-autocomplete
-                    hide-no-data
-                    :items="listQuanHuyen"
-                    v-model="quanHuyen"
-                    item-text="quanHuyenTen"
-                    item-value="quanHuyenMa"
-                    id="quanhuyen"
-                    :rules="required"
-                    required
-                    outlined
-                    placeholder="Quận/ Huyện"
-                    dense
-                    hide-details="auto"
-                    @keyup.enter="nextFocus('xaphuong')"
-                ></v-autocomplete>
+                      hide-no-data
+                      :items="listQuanHuyen"
+                      v-model="quanHuyen"
+                      item-text="quanHuyenTen"
+                      item-value="quanHuyenMa"
+                      id="quanhuyen"
+                      :rules="required"
+                      required
+                      outlined
+                      placeholder="Quận/ Huyện"
+                      dense
+                      hide-details="auto"
+                      @keyup.enter="nextFocus('xaphuong')"
+                  ></v-autocomplete>
                 </v-col>
                 <v-col
                   cols="12"
-                  md="6"
+                  md="4"
                   class="pb-0"
                 >
                   <div class="mb-2">Phường/ Xã <span style="color:red">(*)</span></div>
@@ -282,276 +201,279 @@
                       placeholder="Phường/ Xã"
                       dense
                       hide-details="auto"
-                      @keyup.enter="nextFocus('diabancoso')"
+                      @keyup.enter="nextFocus('congtylamviec')"
                   ></v-autocomplete>
                 </v-col>
+                                
+              </v-row>
+              <!-- row 4 -->
+              <v-row class="pt-3">
                 <v-col
                   cols="12"
-                  md="6"
                   class="pb-0"
                 >
-                  <div class="mb-2">Tổ dân phố/thôn/ấp <span style="color:red">(*)</span></div>
-                  <v-autocomplete
-                      hide-no-data
-                      :items="listDiaBan"
-                      :rules="required"
-                      required
-                      v-model="applicantInfo['DiaBanCoSo_ID']"
-                      item-text="tenDiaBan"
-                      item-value="id"
-                      outlined
-                      placeholder="Tổ dân phố, khóm ấp, thôn bản…"
-                      dense
-                      hide-details="auto"
-                      id="diabancoso"
-                      @keyup.enter="nextFocus('noio')"
-                  ></v-autocomplete>
-                </v-col>
-                <v-col
-                  cols="6"
-                  class="pb-0"
-                >
-                  <div class="mb-2">Địa chỉ chi tiết <span style="color:red">(*)</span></div>
+                  <div class="mb-2">Đơn vị/ công ty làm việc <span style="color:red">(*)</span></div>
                   <v-text-field
-                    v-model="applicantInfo['DiaChiNoiO']"
+                    v-model="applicantInfo['noiCtTenCoQuan']"
                     :rules="required"
                     required
                     outlined
-                    placeholder="Số nhà, đường, tổ dân phố, khóm ấp, thôn bản…"
+                    placeholder=""
                     dense
-                    id="noio"
+                    id="congtylamviec"
                     hide-details="auto"
-                    @keyup.enter="nextFocus('cosoyte')"
+                    @keyup.enter="nextFocus('noilamviec')"
                   ></v-text-field>
                 </v-col>
                 <v-col
                   cols="12"
-                  md="12"
                   class="pb-0"
                 >
-                  <div class="mb-2">Cơ sở y tế <span style="color:red">(*)</span></div>
-                  <v-autocomplete
-                      hide-no-data
-                      :items="listCoSoYTe"
-                      v-model="coSoYTe"
-                      :rules="required"
-                      required
-                      item-text="tenCoSo"
-                      item-value="maCoSo"
-                      outlined
-                      placeholder="Cơ sở y tế"
-                      dense
-                      hide-details="auto"
-                      id="cosoyte"
-                      @keyup.enter="nextFocus('diabancoso')"
-                      clearable
-                  ></v-autocomplete>
-                </v-col>
-                
-              </v-row>
-              <!-- row 4 -->
-              <v-row>
-                <!-- <v-col
-                  cols="12"
-                  md="6"
-                  class="pb-0"
-                >
-                  <div class="mb-2">Nghề nghiệp</div>
+                  <div class="mb-2">Địa chỉ nơi làm việc <span style="color:red">(*)</span></div>
                   <v-text-field
-                    v-model="applicantInfo['NgheNghiep']"
+                    v-model="applicantInfo['noiCtDiaChi']"
+                    :rules="required"
+                    required
                     outlined
-                    placeholder="Nghề nghiệp"
+                    placeholder=""
                     dense
-                    id="nghenghiep"
+                    id="noilamviec"
                     hide-details="auto"
-                    @keyup.enter="nextFocus('donvicongtac')"
+                    @keyup.enter="nextFocus('tinhthanhlamviec')"
                   ></v-text-field>
-                </v-col> -->
+                </v-col>
                 <v-col
                   cols="12"
-                  md="6"
+                  md="4"
                   class="pb-0"
                 >
-                  <div class="mb-2">Nhóm đối tượng <span style="color:red">(*)</span></div>
+                  <div class="mb-2">Tỉnh/ Thành phố <span style="color:red">(*)</span></div>
                   <v-autocomplete
-                      ref="chondoituong"
-                      :items="listDoiTuong"
-                      placeholder="Nhóm đối tượng"
-                      v-model="applicantInfo['NhomDoiTuong']"
-                      item-text="doiTuongMoTa"
-                      item-value="id"
                       hide-no-data
+                      :items="listTinhThanh"
+                      v-model="tinhThanhLamViec"
+                      item-text="tinhThanhTen"
+                      item-value="tinhThanhMa"
+                      id="tinhthanhlamviec"
                       :rules="required"
                       required
                       outlined
+                      placeholder="Tỉnh/ Thành phố"
                       dense
-                      hide-details="auto"    
-                      id="nhomdoituong"
-                      @keyup.enter="nextFocus('donvicongtac')"
-                  >
-                  <template v-slot:selection="data">
-                      <span>{{ data.item.doiTuongMoTa }}</span>
-                    </template>
-                    <template v-slot:item="data">
-                      <span>{{ data.item.doiTuongMoTa }}</span>
-                    </template>
-                  </v-autocomplete>
+                      hide-details="auto"
+                      @keyup.enter="nextFocus('quanhuyenlamviec')"
+                  ></v-autocomplete>
                 </v-col>
                 <v-col
                   cols="12"
-                  md="6"
+                  md="4"
                   class="pb-0"
                 >
-                  <div class="mb-2">Đơn vị công tác</div>
-                  <v-text-field
-                    v-model="applicantInfo['DonViCongTac']"
+                  <div class="mb-2">Quận/ Huyện <span style="color:red">(*)</span></div>
+                  <v-autocomplete
+                    hide-no-data
+                    :items="listQuanHuyenLamViec"
+                    v-model="quanHuyenLamViec"
+                    item-text="quanHuyenTen"
+                    item-value="quanHuyenMa"
+                    id="quanhuyenlamviec"
+                    :rules="required"
+                    required
                     outlined
-                    placeholder="Đơn vị công tác"
+                    placeholder="Quận/ Huyện"
                     dense
-                    id="donvicongtac"
                     hide-details="auto"
-                    @keyup.enter="nextFocus('dantoc')"
-                  ></v-text-field>
-                </v-col>
-                
-              </v-row>
-              <!-- row 5 -->
-              <v-row>                
-                <v-col
-                  cols="12"
-                  md="6"
-                  class="pb-0"
-                >
-                  <div class="mb-2">Dân tộc</div>
-                  <v-autocomplete
-                      hide-no-data
-                      :items="listDanToc"
-                      v-model="applicantInfo['DanToc_Ma']"
-                      item-text="danTocTen"
-                      item-value="danTocMa"
-                      
-                      outlined
-                      placeholder="Dân tộc"
-                      dense
-                      hide-details="auto"
-                      id="dantoc"
-                      @keyup.enter="nextFocus('quoctich')"
-                  ></v-autocomplete>
+                    @keyup.enter="nextFocus('xaphuonglamviec')"
+                ></v-autocomplete>
                 </v-col>
                 <v-col
                   cols="12"
-                  md="6"
+                  md="4"
                   class="pb-0"
                 >
-                  <div class="mb-2">Quốc tịch </div>
+                  <div class="mb-2">Phường/ Xã <span style="color:red">(*)</span></div>
                   <v-autocomplete
                       hide-no-data
-                      :items="listQuocTich"
-                      v-model="applicantInfo['QuocTich_Ma']"
-                      item-text="quocGiaTen"
-                      item-value="quocGiaMa"
+                      :items="listXaPhuongLamViec"
+                      v-model="xaPhuongLamViec"
+                      item-text="phuongXaTen"
+                      item-value="phuongXaMa"
+                      id="xaphuonglamviec"
+                      :rules="required"
+                      required
                       outlined
-                      placeholder="Quốc tịch"
+                      placeholder="Phường/ Xã"
                       dense
                       hide-details="auto"
-                      id="quoctich"
-                      @keyup.enter="nextFocus('tsdiung')"
+                      @keyup.enter="nextFocus('starttime')"
                   ></v-autocomplete>
                 </v-col>
+                                
               </v-row>
-              <!-- row 6 -->
               <v-row>
                 <v-col
                   cols="12"
-                  md="12"
                   class="pb-0"
                 >
-                  <div class="mb-2">Tiền sử dị ứng</div>
-                  <v-textarea
-                    v-model="applicantInfo['TienSuDiUng']"
-                    outlined
-                    placeholder=""
-                    dense
-                    id="tsdiung"
-                    hide-details="auto"
-                    rows="3"
-                    @keyup.enter="nextFocus('benhdangmac')"
-                  ></v-textarea>
+                  <div>
+                    <span class="font-weight-bold">LỊCH LÀM VIỆC</span>
+                    <i> (Chọn các ngày trong tuần hoặc ngày cụ thể) </i>
+                  </div>
                 </v-col>
-                <v-col
-                  cols="12"
-                  md="6"
-                  class="pb-0"
-                >
-                  <div class="mb-2">Các bệnh lý đang mắc </div>
-                  <v-textarea
-                    v-model="applicantInfo['CacBenhLyDangMac']"
-                    outlined
-                    placeholder=""
-                    dense
-                    id="benhdangmac"
-                    hide-details="auto"
-                    rows="3"
-                    @keyup.enter="nextFocus('thuocdangdung')"
-                  ></v-textarea>
-                </v-col>
-                <v-col
-                  cols="12"
-                  md="6"
-                  class="pb-0"
-                >
-                  <div class="mb-2">Các thuốc đang dùng</div>
-                  <v-textarea
-                    v-model="applicantInfo['CacThuocDangDung']"
-                    outlined
-                    placeholder=""
-                    dense
-                    id="thuocdangdung"
-                    hide-details="auto"
-                    rows="3"
-                    @keyup.enter="nextFocus('ngaydangky')"
-                  ></v-textarea>
-                </v-col>
-                
               </v-row>
-              <!-- row 7 -->
+              <!--  -->
               <v-row>
                 <v-col
                   cols="12"
                   md="6"
                   class="pb-0"
                 >
-                  <div class="mb-2">Ngày đăng ký tiêm</div>
-                  <!-- <v-menu
-                    ref="menuDate"
+                  <div class="mb-3">Các ngày trong tuần <span style="color:red">(*)</span></div>
+                  <div class="pt-2">
+                    <v-chip
+                      v-for="(item, index) in weekDay" v-bind:key="index"
+                      class="mr-2"
+                      :color="item.selected ? 'primary' : 'dark'"
+                      label
+                      @click="changeWeekDay(index)"
+                    >
+                      <span style="font-size: 12px">{{item.name}}</span>
+                    </v-chip>
+                  </div>
+                </v-col>
+                <v-col
+                  cols="12"
+                  md="6"
+                  class="pb-0"
+                >
+                  <div class="mb-3">Các ngày cụ thể <span style="color:red">(*)</span></div>
+                  <v-menu
+                    ref="menu"
+                    v-model="menu"
                     :close-on-content-click="false"
-                    v-model="menuDate"
-                    :nudge-right="40"
-                    lazy
+                    :return-value.sync="dates"
                     transition="scale-transition"
                     offset-y
-                    full-width
-                    max-width="290px"
-                    min-width="290px"
+                    min-width="auto"
                   >
                     <template v-slot:activator="{ on, attrs }">
-                      <v-text-field
-                        :rules="requiredBirthDate"
-                        v-model="ngayDuKienFormatted"
-                        placeholder="dd/mm/yyyy"
-                        v-mask="'##/##/####'"
-                        @blur=""
-                        dense
-                        
-                        hide-details="auto"
-                        outlined
+                      <v-combobox
+                        v-model="dates"
+                        multiple
+                        chips
+                        placeholder="Các ngày cụ thể"
+                        readonly
                         v-bind="attrs"
                         v-on="on"
-                      ></v-text-field>
+                        dense
+                        hide-details="auto"
+                        outlined
+                        clearable
+                      >
+                        <template v-slot:selection="data">
+                          <v-chip
+                            class="ma-2"
+                            color="green"
+                            text-color="white"
+                          >
+                            {{formatDate(data.item)}}
+                          </v-chip>
+                        </template>
+                      </v-combobox>
                     </template>
-                    <v-date-picker :min="getMindate()" ref="picker"
-                    :first-day-of-week="1" locale="vi" v-model="ngayDuKien" no-title @input="menuDate = false"></v-date-picker>
-                  </v-menu> -->
+                    <v-date-picker
+                      v-model="dates"
+                      multiple
+                      no-title
+                      scrollable
+                      locale="vi"
+                    >
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        text
+                        color="primary"
+                        @click="menu = false"
+                      >
+                        Thoát
+                      </v-btn>
+                      <v-btn
+                        text
+                        color="primary"
+                        @click="$refs.menu.save(dates)"
+                      >
+                        Đồng ý
+                      </v-btn>
+                    </v-date-picker>
+                  </v-menu>
+                </v-col>
+                
+                <v-col
+                  cols="12"
+                  md="6"
+                  class="pb-0"
+                >
+                  <div class="mb-2">Thời gian làm việc<span style="color:red">(*)</span></div>
+                  <v-layout wrap>
+                    
+                    <v-text-field
+                      style="max-width: 120px;"
+                      label="Từ:"
+                      class="flex mr-2"
+                      v-model="timeStart"
+                      placeholder="hh:mm"
+                      v-mask="'##:##'"
+                      dense
+                      outlined
+                      hide-details="auto"
+                      id="starttime"
+                      @keyup.enter="nextFocus('endtime')"
+                      :rules="required"
+                      required
+                    ></v-text-field>
+                  
+                    <v-text-field
+                      style="max-width: 120px;"
+                      label="Đến:"
+                      class="flex ml-2"
+                      v-model="timeEnd"
+                      placeholder="hh:mm"
+                      v-mask="'##:##'"
+                      dense
+                      outlined
+                      hide-details="auto"
+                      id="endtime"
+                      @keyup.enter="nextFocus('ngaycap')"
+                      :rules="required"
+                      required
+                    ></v-text-field>
+                  </v-layout>
+                </v-col>
+              </v-row>
+              <!-- -->
+              <v-row>
+                <v-col
+                  cols="12"
+                  md="6"
+                  class="pb-0 pt-3"
+                >
+                  <div class="mb-2">Ngày cấp giấy đi đường</div>
+                  <v-text-field
+                    v-model="applicantDateFormatted"
+                    placeholder="dd/mm/yyyy, ddmmyyyy"
+                    @blur="formatBirthDate"
+                    dense
+                    hide-details="auto"
+                    outlined
+                    id="ngaycap"
+                    @keyup.enter="nextFocus('thoihan')"
+                  ></v-text-field>
+                </v-col>
+                <v-col
+                  cols="12"
+                  md="6"
+                  class="pb-0"
+                >
+                  <div class="mb-2">Ngày hết hạn <span style="color:red"></span></div>
                   <v-text-field
                     v-model="ngayDuKienFormatted"
                     placeholder="dd/mm/yyyy, ddmmyyyy"
@@ -559,25 +481,24 @@
                     dense
                     hide-details="auto"
                     outlined
-                    id="ngaydangky"
-                    @keyup.enter="nextFocus('luuy')"
+                    id="thoihan"
+                    @keyup.enter="nextFocus('ghichu')"
                   ></v-text-field>
                 </v-col>
                 <v-col
                   cols="12"
-                  md="6"
                   class="pb-0"
                 >
-                  <div class="mb-2">Lưu ý</div>
-                  <v-text-field
-                    v-model="applicantInfo['GhiChu']"
+                  <div class="mb-2">Ghi chú</div>
+                  <v-textarea
+                    v-model="applicantInfo['ghiChu']"
                     outlined
                     placeholder=""
                     dense
-                    
+                    rows=3
                     hide-details="auto"
-                    id="luuy"
-                  ></v-text-field>
+                    id="ghichu"
+                  ></v-textarea>
                 </v-col>
               </v-row>
             </v-container>
@@ -597,7 +518,7 @@
                 <v-icon left>
                   mdi-content-save-outline
                 </v-icon>
-                <span>ĐĂNG KÝ TIÊM</span>
+                <span>ĐĂNG KÝ</span>
               </v-btn>
               <v-btn v-if="String(uid) !== '0'" class="mr-3" color="#0072bc" @click="submitForm">
                 <v-icon left>
@@ -626,46 +547,73 @@
         tab: null,
         typeAction: 'add',
         processingAction: false,
-        applicantInfo: {
-          HoVaTen: '',
-          NgaySinh: '',
-          GioiTinh: '',
-          CMTCCCD: '',
-          NgheNghiep: '',
-          NhomDoiTuong: '',
-          DonViCongTac: '',
-          SoDienThoai: '',
-          SoDienThoaiZalo: '',
-          Email: '',
-          MaSoBHXH: '',
-          SoTheBHYT: '',
-          DiaChiNoiO: '',
-          TinhThanh_Ma: '',
-          TinhThanh_Ten: '',
-          QuanHuyen_Ma: '',
-          QuanHuyen_Ten: '',
-          PhuongXa_Ma: '',
-          PhuongXa_Ten: '',
-          DiaBanCoSo_ID: '',
-          CoSoYTe_Ma: '',
-          CoSoYTe_Ten: '',
-          DanToc_Ma: '01',
-          QuocTich_Ma: 'VN',
-          TienSuDiUng: '',
-          CacBenhLyDangMac: '',
-          CacThuocDangDung: '',
-          GhiChu: '',
-          NgayDangKi: '',
-          TinhTrangDangKi: 0
+        giayToLoaiKhac: false,
+        dates: [],
+        menu: false,
+        weekDay: [
+          {name: 'Thứ 2', value: 2, selected: false},
+          {name: 'Thứ 3', value: 3, selected: false},
+          {name: 'Thứ 4', value: 4, selected: false},
+          {name: 'Thứ 5', value: 5, selected: false},
+          {name: 'Thứ 6', value: 6, selected: false},
+          {name: 'Thứ 7', value: 7, selected: false},
+          {name: 'Chủ nhật', value: 0, selected: false}
+        ],
+        weekDayDefault: [
+          {name: 'Thứ 2', value: 2, selected: false},
+          {name: 'Thứ 3', value: 3, selected: false},
+          {name: 'Thứ 4', value: 4, selected: false},
+          {name: 'Thứ 5', value: 5, selected: false},
+          {name: 'Thứ 6', value: 6, selected: false},
+          {name: 'Thứ 7', value: 7, selected: false},
+          {name: 'Chủ nhật', value: 0, selected: false}
+        ],
+        timeStart: '',
+        timeEnd: '',
+        workTime: {
+          ngayTuan: [],
+          ngayThang: [],
+          tuGio: '',
+          denGio: ''
         },
-        listGioiTinh: [{name: 'Nam', value: 0},{name: 'Nữ', value: 1},{name: 'Không xác định', value: 2}],
-        listDoiTuong: [],
+        applicantInfo: {
+          hoVaTen: '',
+          cmtcccd: '',
+          soDienThoai: '',
+          email: '',
+          noiCtTenCoQuan: '',
+          noiCtDiaChi: '',
+          noiCtTinhThanhMa: '',
+          noiCtTinhThanhTen: '',
+          noiCtQuanHuyenMa: '',
+          noiCtQuanHuyenTen: '',
+          noiCtPhuongXaMa: '',
+          noiCtPhuongXaTen: '',
+          noiODiaChi: '',
+          noiOTinhThanhMa: '',
+          noiOTinhThanhTen: '',
+          noiOQuanHuyenMa: '',
+          noiOQuanHuyenTen: '',
+          noiOPhuongXaMa: '',
+          noiOPhuongXaTen: '',
+          lichLamViec: '',
+          uyBanNhanDanID: '',
+          ngayCap: '',
+          thoiHan: '',
+          ghiChu: '',
+          status: 0
+        },
         listTinhThanh: [],
         tinhThanh: '01',
+        tinhThanhLamViec: '01',
         listQuanHuyen: [],
+        listQuanHuyenLamViec: [],
         quanHuyen: '004',
+        quanHuyenLamViec: '004',
         listXaPhuong: [],
+        listXaPhuongLamViec: [],
         xaPhuong: '',
+        xaPhuongLamViec: '',
         listDiaBan: [
         ],
         listCoSoYTe: [],
@@ -752,11 +700,6 @@
       '$route': function (newRoute, oldRoute) {
         let vm = this
         let currentQuery = newRoute.query
-        vm.getCoSoYTe()
-        vm.getDiaBanCoSo()
-        vm.getQuocGia()
-        vm.getNhomDoiTuong()
-        vm.getDanToc()
         vm.getTinhThanh()
         if (String(vm.uid) === '0') {
           vm.typeAction = 'add'
@@ -765,20 +708,32 @@
           vm.bindDataUpdate()
         }
       },
+      dates (val) {
+        if (val && val.length) {
+          // this.weekDay = this.weekDayDefault
+        }
+      },
       tinhThanh (val) {
-        this.applicantInfo.TinhThanh_Ma = val
+        this.applicantInfo.noiOTinhThanhMa = val
         this.getQuanHuyen(val)
       },
       quanHuyen (val) {
-        this.applicantInfo.QuanHuyen_Ma = val
+        this.applicantInfo.noiOQuanHuyenMa = val
         this.getXaPhuong(val)
       },
       xaPhuong (val) {
-        this.applicantInfo.PhuongXa_Ma = val 
+        this.applicantInfo.noiOPhuongXaMa = val 
       },
-      coSoYTe (val) {
-        this.applicantInfo.CoSoYTe_Ma = val
-        this.getDiaBanCoSo(val)
+      tinhThanhLamViec (val) {
+        this.applicantInfo.noiCtTinhThanhMa = val
+        this.getQuanHuyen(val, 'noilamviec')
+      },
+      quanHuyenLamViec (val) {
+        this.applicantInfo.noiCtQuanHuyenMa = val
+        this.getXaPhuong(val, 'noilamviec')
+      },
+      xaPhuongLamViec (val) {
+        this.applicantInfo.noiCtPhuongXaMa = val 
       },
       birthDate (val) {
         this.applicantDateFormatted = this.formatDate(this.birthDate)
@@ -794,29 +749,23 @@
       breakpointName () {
         return this.$store.getters.getBreakpointName
       },
-      registrationUpdate () {
-        return this.$store.getters.getRegistrationUpdate
+      giaydiduongUpdate () {
+        return this.$store.getters.getGiayDiDuongUpdate
       }
     },
     created () {
       let vm = this
-      vm.$store.commit('SET_INDEXTAB', 1)
+      vm.$store.commit('SET_INDEXTAB', 3)
       let isSigned = this.$store.getters.getIsSigned
       if (!isSigned) {
         vm.$router.push({ path: '/login' })
         return
       }
       try {
-        let data = localStorage.getItem('dataHistory')
+        let data = localStorage.getItem('giayDiDuong')
         vm.dataHistory = data ? JSON.parse(data) : ''
       } catch (error) {
       }
-      // vm.getUserInfo()
-      vm.getCoSoYTe()
-      vm.getDiaBanCoSo()
-      vm.getQuocGia()
-      vm.getNhomDoiTuong()
-      vm.getDanToc()
       vm.getTinhThanh()
       if (String(vm.uid) === '0') {
         vm.typeAction = 'add'
@@ -824,15 +773,18 @@
         vm.typeAction = 'update'
         vm.bindDataUpdate()
       }
-      try {
-        let data = localStorage.getItem('user')
-        if (data && JSON.parse(data)) {
-          vm.applicantInfo['DiaBanCoSo_ID'] = JSON.parse(data)['diaBanCoSoId']
-        }
-      } catch (error) {
-      }
     },
     methods: {
+      changeWeekDay(index) {
+        let vm = this
+        vm.weekDay[index]['selected'] = !vm.weekDay[index]['selected']
+        let exits = vm.weekDay.filter(function (item) {
+          return item.selected
+        })
+        if (exits && exits.length) {
+          // vm.dates = []
+        }
+      },
       autoBind() {
         let vm = this
         console.log('add', $('#nhomdoituong').val())
@@ -841,109 +793,77 @@
         }
         vm.$refs.chondoituong.isMenuActive = false
       },
-      getUserInfo () {
-        let vm = this
-        try {
-          let dataUser = JSON.parse(localStorage.getItem('user'))
-          if (!dataUser['user_id']) {
-            vm.$router.push({ path: '/login' })
-          }
-          let filter = {
-            user_id: dataUser['user_id']
-          }
-          vm.$store.dispatch('getUserInfo', filter).then(function(dataInfo) {
-          }).catch (function () {
-            vm.$router.push({ path: '/login' })
-          })
-        } catch (error) {
-          vm.$router.push({ path: '/login' })
-        }
-      },
       submitForm () {
         let vm = this
         if (vm.processingAction) {
           return
         }
         vm.processingAction = true
-        let validateTuoi = vm.checkTuoi()
-        // let validateTuoi = true
+        // vm.formatDataInput()
         if (vm.$refs.formDangKy.validate()) {
-          if (validateTuoi) {
-            vm.formatDataInput()
-            let filter = {
-              data: vm.applicantInfo
+          vm.formatDataInput()
+          let filter = {
+            data: vm.applicantInfo
+          }
+          // thực hiện thêm mới
+          if (vm.typeAction === 'add') {
+            try {
+              vm.dataHistory = vm.applicantInfo ? vm.applicantInfo : ''
+              localStorage.setItem('giayDiDuong', JSON.stringify(vm.applicantInfo))
+            } catch (error) {
             }
-            // thực hiện thêm mới
-            if (vm.typeAction === 'add') {
-              try {
-                vm.dataHistory = vm.applicantInfo ? vm.applicantInfo : ''
-                localStorage.setItem('dataHistory', JSON.stringify(vm.applicantInfo))
-              } catch (error) {
-              }
-            }
-            if (vm.typeAction === 'add') {
-              vm.$store.dispatch('createRegistration', filter).then(function (result) {
-                vm.$store.commit('SHOW_SNACKBAR', {
-                  show: true,
-                  text: 'Đăng ký thành công',
-                  color: 'success',
-                })
-                vm.processingAction = false
-                
-                vm.tinhThanh = '01'
-                vm.quanHuyen = '004'
-                // vm.xaPhuong = '00148'
-                vm.applicantInfo['DanToc_Ma'] = '01'
-                vm.applicantInfo['QuocTich_Ma'] = 'VN'
-                vm.applicantInfo['HoVaTen'] = ''
-                vm.applicantInfo['GioiTinh'] = ''
-                vm.applicantDateFormatted = ''
-                vm.applicantInfo['CMTCCCD'] = ''
-                vm.applicantInfo['SoTheBHYT'] = ''
-                vm.applicantInfo['SoDienThoai'] = ''
-                vm.$refs.formDangKy.resetValidation()
-                $('html, body').animate({
-                    scrollTop: $('#xemdanhsach').offset().top,
-                  },
-                  500,
-                  'linear'
-                )
-                $("#hoten").focus()
-              }).catch(function () {
-                vm.$store.commit('SHOW_SNACKBAR', {
-                  show: true,
-                  text: 'Đăng ký không thành công',
-                  color: 'error',
-                })
-                vm.processingAction = false
+          }
+          if (vm.typeAction === 'add') {
+            vm.$store.dispatch('createGiayDiDuong', filter).then(function (result) {
+              vm.$store.commit('SHOW_SNACKBAR', {
+                show: true,
+                text: 'Đăng ký thành công',
+                color: 'success',
               })
-            } else {
-              // thực hiện cập nhật
-              filter['id'] = vm.uid
-              vm.$store.dispatch('updateRegistration', filter).then(function (result) {
-                vm.$store.commit('SHOW_SNACKBAR', {
-                  show: true,
-                  text: 'Cập nhật thành công',
-                  color: 'success',
-                })
-                vm.processingAction = false
-                vm.$router.push('/pages/danh-sach-dang-ky-tiem-moi')
-              }).catch(function () {
-                vm.$store.commit('SHOW_SNACKBAR', {
-                  show: true,
-                  text: 'Cập nhật không thành công',
-                  color: 'error',
-                })
-                vm.processingAction = false
+              vm.processingAction = false
+              // vm.tinhThanh = '01'
+              // vm.quanHuyen = '004'
+              // vm.tinhThanhLamViec = '01'
+              // vm.quanHuyenLamViec = '004'
+              vm.applicantInfo.hoVaTen = ''
+              vm.applicantInfo['cmtcccd'] = ''
+              vm.applicantInfo.email = ''
+              vm.applicantInfo.soDienThoai = ''
+              vm.$refs.formDangKy.resetValidation()
+              $('html, body').animate({
+                  scrollTop: $('#xemdanhsach').offset().top,
+                },
+                500,
+                'linear'
+              )
+              $("#hoten").focus()
+            }).catch(function () {
+              vm.$store.commit('SHOW_SNACKBAR', {
+                show: true,
+                text: 'Đăng ký không thành công',
+                color: 'error',
               })
-            }
-          } else {
-            vm.$store.commit('SHOW_SNACKBAR', {
-              show: true,
-              text: 'Người đăng ký chưa đủ 18 tuổi',
-              color: 'error',
+              vm.processingAction = false
             })
-            vm.processingAction = false
+          } else {
+            // thực hiện cập nhật
+            filter['id'] = vm.uid
+            vm.$store.dispatch('updateGiayDiDuong', filter).then(function (result) {
+              vm.$store.commit('SHOW_SNACKBAR', {
+                show: true,
+                text: 'Cập nhật thành công',
+                color: 'success',
+              })
+              vm.processingAction = false
+              vm.$router.push('/pages/danh-sach-di-duong-yeu-cau')
+            }).catch(function () {
+              vm.$store.commit('SHOW_SNACKBAR', {
+                show: true,
+                text: 'Cập nhật không thành công',
+                color: 'error',
+              })
+              vm.processingAction = false
+            })
           }
         } else {
           vm.processingAction = false
@@ -963,218 +883,128 @@
       copyContent () {
         let vm = this
         try {
-          let data = localStorage.getItem('dataHistory')
+          let data = localStorage.getItem('giayDiDuong')
           vm.dataHistory = data ? JSON.parse(data) : ''
         } catch (error) {
         }
-        vm.applicantInfo['Email'] = vm.dataHistory['Email']
-        vm.applicantInfo['NhomDoiTuong'] = vm.dataHistory['NhomDoiTuong']
-        vm.applicantInfo['DiaChiNoiO'] = vm.dataHistory['DiaChiNoiO']
-        vm.tinhThanh = vm.dataHistory['TinhThanh_Ma']
-        vm.quanHuyen = vm.dataHistory['QuanHuyen_Ma']
-        vm.xaPhuong = vm.dataHistory['PhuongXa_Ma']
-        vm.applicantInfo['DiaBanCoSo_ID'] = vm.dataHistory['DiaBanCoSo_ID']
-        vm.coSoYTe = vm.dataHistory['CoSoYTe_Ma']
-        vm.applicantInfo['DanToc_Ma'] = vm.dataHistory['DanToc_Ma']
-        vm.applicantInfo['QuocTich_Ma'] = vm.dataHistory['QuocTich_Ma']
-        vm.applicantInfo['DonViCongTac'] = vm.dataHistory['DonViCongTac']
-        vm.applicantInfo['TienSuDiUng'] = vm.dataHistory['TienSuDiUng']
-        vm.applicantInfo['CacBenhLyDangMac'] = vm.dataHistory['CacBenhLyDangMac']
-        vm.applicantInfo['CacThuocDangDung'] = vm.dataHistory['CacThuocDangDung']
-        vm.ngayDuKienFormatted = vm.dataHistory['NgayDangKi']
-        vm.applicantInfo['GhiChu'] = vm.dataHistory['GhiChu']
+        vm.applicantInfo.hoVaTen = vm.dataHistory.hoVaTen
+        vm.applicantInfo['cmtcccd'] = vm.dataHistory['cmtcccd']
+        vm.applicantInfo.email = vm.dataHistory.email
+        vm.applicantInfo.soDienThoai = vm.dataHistory.soDienThoai
+        vm.applicantInfo.noiODiaChi = vm.dataHistory.noiODiaChi
+        vm.tinhThanh = vm.dataHistory.noiOTinhThanhMa
+        vm.quanHuyen = vm.dataHistory.noiOQuanHuyenMa
+        vm.xaPhuong = vm.dataHistory.noiOPhuongXaMa
+        vm.applicantInfo.noiCtTenCoQuan = vm.dataHistory.noiCtTenCoQuan
+        vm.applicantInfo.noiCtDiaChi = vm.dataHistory.noiCtDiaChi
+        vm.tinhThanhLamViec = vm.dataHistory.noiCtTinhThanhMa
+        vm.quanHuyenLamViec = vm.dataHistory.noiCtQuanHuyenMa
+        vm.xaPhuongLamViec = vm.dataHistory.noiCtPhuongXaMa
+
+        vm.ngayDuKienFormatted = vm.dataHistory.thoiHan
+        vm.applicantDateFormatted = vm.dataHistory.ngayCap
+        vm.applicantInfo.ghiChu = vm.dataHistory.ghiChu
+        vm.converLichLamViec(vm.dataHistory.lichLamViec)
       },
       huyDangKy () {
         let vm = this
         vm.$refs.formDangKy.reset()
         vm.$refs.formDangKy.resetValidation()
-        vm.applicantInfo['DanToc_Ma'] = '01'
-        vm.applicantInfo['QuocTich_Ma'] = 'VN'
       },
       bindDataUpdate () {
         let vm = this
-        vm.applicantInfo.CacBenhLyDangMac = vm.registrationUpdate.cacBenhLyDangMac
-        vm.applicantInfo.CacThuocDangDung = vm.registrationUpdate.cacThuocDangDung
-        vm.applicantInfo['CMTCCCD'] = vm.registrationUpdate.cmtcccd
-        vm.coSoYTe = vm.registrationUpdate.coSoYTeMa
-        vm.applicantInfo.DanToc_Ma = vm.registrationUpdate.danTocMa
-        vm.applicantInfo.DiaBanCoSo_ID = vm.registrationUpdate.diaBanCoSoID
-        vm.applicantInfo.DiaChiNoiO = vm.registrationUpdate.diaChiNoiO
-        vm.applicantInfo.DonViCongTac = vm.registrationUpdate.donViCongTac
-        vm.applicantInfo.Email = vm.registrationUpdate.email
-        vm.applicantInfo.GhiChu = vm.registrationUpdate.ghiChu
-        vm.applicantInfo.GioiTinh = vm.registrationUpdate.gioiTinh
-        vm.applicantInfo.HoVaTen = vm.registrationUpdate.hoVaTen
-        vm.applicantInfo.MaSoBHXH = vm.registrationUpdate.maSoBHXH
-        // vm.ngayDuKienFormatted = vm.convertDate(vm.registrationUpdate.ngayDangKi)
-        // vm.applicantDateFormatted = vm.convertDate(vm.registrationUpdate.ngaySinh)
-        vm.ngayDuKienFormatted = vm.registrationUpdate.ngayDangKi
-        vm.applicantDateFormatted = vm.registrationUpdate.ngaySinh
-        vm.applicantInfo.NgheNghiep = vm.registrationUpdate.ngheNghiep
-        vm.applicantInfo.NhomDoiTuong = vm.registrationUpdate.nhomDoiTuong
-        vm.tinhThanh = vm.registrationUpdate.tinhThanhMa
-        vm.quanHuyen = vm.registrationUpdate.quanHuyenMa
-        vm.xaPhuong = vm.registrationUpdate.phuongXaMa
-        vm.applicantInfo.QuocTich_Ma = vm.registrationUpdate.quocTichMa
-        vm.applicantInfo.SoDienThoai = vm.registrationUpdate.soDienThoai
-        vm.applicantInfo.SoTheBHYT = vm.registrationUpdate.soTheBHYT
-        vm.applicantInfo.TienSuDiUng = vm.registrationUpdate.tienSuDiUng
-        vm.applicantInfo.TinhTrangDangKi = vm.registrationUpdate.tinhTrangDangKi
+        vm.applicantInfo.hoVaTen = vm.giaydiduongUpdate.hoVaTen
+        vm.applicantInfo['cmtcccd'] = vm.giaydiduongUpdate.cmtcccd
+        vm.applicantInfo.email = vm.giaydiduongUpdate.email
+        vm.applicantInfo.soDienThoai = vm.giaydiduongUpdate.soDienThoai
+        vm.applicantInfo.noiODiaChi = vm.giaydiduongUpdate.noiODiaChi
+        vm.tinhThanh = vm.giaydiduongUpdate.noiOTinhThanhMa
+        vm.quanHuyen = vm.giaydiduongUpdate.noiOQuanHuyenMa
+        vm.xaPhuong = vm.giaydiduongUpdate.noiOPhuongXaMa
+        vm.applicantInfo.noiCtDiaChi = vm.giaydiduongUpdate.noiCtDiaChi
+        vm.applicantInfo.noiCtTenCoQuan = vm.giaydiduongUpdate.noiCtTenCoQuan
+        vm.tinhThanhLamViec = vm.giaydiduongUpdate.noiCtTinhThanhMa
+        vm.quanHuyenLamViec = vm.giaydiduongUpdate.noiCtQuanHuyenMa
+        vm.xaPhuongLamViec = vm.giaydiduongUpdate.noiCtPhuongXaMa
+
+        vm.ngayDuKienFormatted = vm.giaydiduongUpdate.thoiHan
+        vm.applicantDateFormatted = vm.giaydiduongUpdate.ngayCap
+        vm.applicantInfo.ghiChu = vm.giaydiduongUpdate.ghiChu     
+        vm.applicantInfo.status = vm.giaydiduongUpdate.status
+        vm.converLichLamViec(vm.giaydiduongUpdate.lichLamViec,'string')
       },
       formatDataInput () {
         let vm = this
+        vm.applicantInfo.uyBanNhanDanID = vm.userLogin['uyBanNhanDanId']
         try {
           if (vm.tinhThanh) {
             let obj = vm.listTinhThanh.find(function (item) {
               return item.tinhThanhMa == vm.tinhThanh
             })
-            vm.applicantInfo.TinhThanh_Ma = vm.tinhThanh
-            vm.applicantInfo.TinhThanh_Ten = obj ? obj['tinhThanhTen'] : ''
+            vm.applicantInfo.noiOTinhThanhMa = vm.tinhThanh
+            vm.applicantInfo.noiOTinhThanhTen = obj ? obj['tinhThanhTen'] : ''
           }
           if (vm.quanHuyen) {
             let obj = vm.listQuanHuyen.find(function (item) {
               return item.quanHuyenMa == vm.quanHuyen
             })
-            vm.applicantInfo.QuanHuyen_Ma = vm.quanHuyen
-            vm.applicantInfo.QuanHuyen_Ten = obj ? obj['quanHuyenTen'] : ''
+            vm.applicantInfo.noiOQuanHuyenMa = vm.quanHuyen
+            vm.applicantInfo.noiOQuanHuyenTen = obj ? obj['quanHuyenTen'] : ''
           }
           if (vm.xaPhuong) {
             let obj = vm.listXaPhuong.find(function (item) {
               return item.phuongXaMa == vm.xaPhuong
             })
-            vm.applicantInfo.PhuongXa_Ma = vm.xaPhuong
-            vm.applicantInfo.PhuongXa_Ten = obj ? obj['phuongXaTen'] : ''
+            vm.applicantInfo.noiOPhuongXaMa = vm.xaPhuong
+            vm.applicantInfo.noiOPhuongXaTen = obj ? obj['phuongXaTen'] : ''
           }
-          if (vm.coSoYTe) {
-            let obj = vm.listCoSoYTe.find(function (item) {
-              return item.maCoSo == vm.coSoYTe
+          if (vm.tinhThanhLamViec) {
+            let obj = vm.listTinhThanh.find(function (item) {
+              return item.tinhThanhMa == vm.tinhThanhLamViec
             })
-            vm.applicantInfo.CoSoYTe_Ma = vm.coSoYTe
-            vm.applicantInfo.CoSoYTe_Ten = obj ? obj['tenCoSo'] : ''
+            vm.applicantInfo.noiCtTinhThanhMa = vm.tinhThanhLamViec
+            vm.applicantInfo.noiCtTinhThanhTen = obj ? obj['tinhThanhTen'] : ''
           }
-          vm.applicantInfo.NgaySinh = vm.applicantDateFormatted
-          vm.applicantInfo.NgayDangKi = vm.ngayDuKienFormatted
-          // let splitNgayDangKy = String(vm.ngayDuKienFormatted).split('/')
-          // vm.applicantInfo.NgayDangKi = splitNgayDangKy[2] + splitNgayDangKy[1] + splitNgayDangKy[0]
-          // let lengthDate = String(vm.applicantDateFormatted).trim().length
-          // let splitDate = String(vm.applicantDateFormatted).split('/')
-          // if (lengthDate && lengthDate == 4) {
-          //   vm.applicantInfo.NgaySinh = vm.applicantDateFormatted + '0000'
-          // } else if (lengthDate && lengthDate > 4 && splitDate.length === 3) {
-          //   vm.applicantInfo.NgaySinh = splitDate[2] + splitDate[1] + splitDate[0]
-          // }
+          if (vm.quanHuyenLamViec) {
+            let obj = vm.listQuanHuyenLamViec.find(function (item) {
+              return item.quanHuyenMa == vm.quanHuyenLamViec
+            })
+            vm.applicantInfo.noiCtQuanHuyenMa = vm.quanHuyenLamViec
+            vm.applicantInfo.noiCtQuanHuyenTen = obj ? obj['quanHuyenTen'] : ''
+          }
+          if (vm.xaPhuongLamViec) {
+            let obj = vm.listXaPhuongLamViec.find(function (item) {
+              return item.phuongXaMa == vm.xaPhuongLamViec
+            })
+            vm.applicantInfo.noiCtPhuongXaMa = vm.xaPhuongLamViec
+            vm.applicantInfo.noiCtPhuongXaTen = obj ? obj['phuongXaTen'] : ''
+          }
+          vm.applicantInfo.ngayCap = vm.applicantDateFormatted
+          vm.applicantInfo.thoiHan = vm.ngayDuKienFormatted
+          let weekDayArr = vm.weekDay.filter(function(item) {
+            return item.selected
+          })
+          vm.workTime['ngayTuan'] = weekDayArr.map(function(item) {
+            return item['value']
+          })
+          // vm.workTime['tuGio'] = vm.timeStart.replace(':','')
+          // vm.workTime['denGio'] = vm.timeEnd.replace(':','')
+          vm.workTime['tuGio'] = vm.timeStart
+          vm.workTime['denGio'] = vm.timeEnd
+          vm.applicantInfo['lichLamViec'] = vm.workTime
+          if (vm.dates && vm.dates.length) {
+            let dateInput = []
+            vm.dates.forEach((element, index) => {
+              let day = vm.formatDate(element)
+              dateInput.push(day)
+            })
+            vm.workTime['ngayThang'] = dateInput
+          }
+          console.log('work', vm.workTime)
           console.log('applicantInfo', vm.applicantInfo)
         } catch (error) {
           vm.processingAction = false
         }
-      },
-      checkTuoi () {
-        let vm = this
-        let tuoi = ''
-        let year = ''
-        let lengthDate = String(vm.applicantDateFormatted).trim().length
-        let splitDate = String(vm.applicantDateFormatted).split('/')
-        let namTiem = (new Date()).getFullYear()
-        // if (vm.ngayDuKienFormatted) {
-        //   namTiem = String(vm.ngayDuKienFormatted).split('/')[2]
-        // }
-        if (lengthDate && lengthDate == 4) {
-          year = Number(vm.applicantDateFormatted)
-          tuoi = Number(namTiem) - year
-        } else if (lengthDate && lengthDate > 4 && splitDate.length === 3) {
-          let isoDate = vm.parseDate(vm.applicantDateFormatted)
-          tuoi = Math.floor((new Date() - new Date(isoDate).getTime()) / 3.15576e+10)
-        }
-        if (tuoi >= 18) {
-          return true
-        } else {
-          return false
-        }
-      },
-      getDiaBanCoSo (val) {
-        let vm = this
-        let filter = {
-          id: -1
-        }
-        if (val) {
-          let obj = vm.listCoSoYTe.find(function (item) {
-            return item.maCoSo == val
-          })
-          filter = {
-            id: obj['id']
-          }
-        }
-        
-        vm.$store.dispatch('getDiaBanCoSo', filter).then(function (result) {
-          if (result.hasOwnProperty('data') && result.data.length) {
-            vm.listDiaBan = result.data
-            try {
-              let data = localStorage.getItem('user')
-              let diaBanUser = JSON.parse(data)['diaBanCoSoId']
-              let obj = vm.listDiaBan.find(function (item) {
-                return item.id == diaBanUser
-              })
-              if (obj) {
-                vm.applicantInfo['DiaChiNoiO'] = obj['tenDiaBan']
-              }
-            } catch (error) {
-            }
-          }
-        })
-      },
-      getCoSoYTe () {
-        let vm = this
-        let filter = {
-        }
-        vm.$store.dispatch('getCoSoYTe', filter).then(function (result) {
-          vm.listCoSoYTe = result ? result : []
-          // bind co so y te
-          try {
-            let data = localStorage.getItem('user')
-            if (data && JSON.parse(data) && JSON.parse(data)['coSoYTeId']) {
-              let obj = vm.listCoSoYTe.find(function (item) {
-                return item.id == JSON.parse(data)['coSoYTeId']
-              })
-              vm.coSoYTe = obj['maCoSo']
-            }
-          } catch (error) {
-          }
-        })
-      },
-      getNhomDoiTuong () {
-        let vm = this
-        let filter = {
-        }
-        vm.$store.dispatch('getNhomDoiTuong', filter).then(function (result) {
-          let data = []
-          if (result && result.length) {
-            for (var i = 0; i < result.length; i++) {
-              let item = {
-                id: result[i]['id'],
-                doiTuongMoTa: result[i]['doiTuongMa'] + ' ' + result[i]['doiTuongMoTa']
-              }
-              data.push(item)
-            }
-          }
-          // vm.listDoiTuong = result ? result : []
-          vm.listDoiTuong = data
-        })
-      },
-      getQuocGia () {
-        let vm = this
-        let filter = {
-        }
-        vm.$store.dispatch('getQuocGia', filter).then(function (result) {
-          vm.listQuocTich = result ? result : []
-        })
-      },
-      getDanToc () {
-        let vm = this
-        let filter = {
-        }
-        vm.$store.dispatch('getDanToc', filter).then(function (result) {
-          vm.listDanToc = result ? result : []
-        })
       },
       getTinhThanh () {
         let vm = this
@@ -1185,13 +1015,16 @@
           if (vm.tinhThanh && vm.listTinhThanh.length) {
             vm.getQuanHuyen(vm.tinhThanh)
           }
+          if (vm.tinhThanhLamViec && vm.listTinhThanh.length) {
+            vm.getQuanHuyen(vm.tinhThanhLamViec, 'noilamviec')
+          }
         }).catch(function(error){
           if (error && error.response && error.response.status == 401) {
             vm.$router.push({ path: '/login' })
           }
         })
       },
-      getQuanHuyen (code) {
+      getQuanHuyen (code, type) {
         let vm = this
         if (!code) {
           return
@@ -1203,20 +1036,34 @@
           idParent: obj['id']
         }
         vm.$store.dispatch('getDanhMucQuanHuyen', filter).then(function (result) {
-          vm.listQuanHuyen = result ? result : []
-          if (vm.quanHuyen) {
-            vm.getXaPhuong(vm.quanHuyen)
+          if (type) {
+            vm.listQuanHuyenLamViec = result ? result : []
+            if (vm.quanHuyenLamViec) {
+              vm.getXaPhuong(vm.quanHuyenLamViec, 'noilamviec')
+            }
+          } else {
+            vm.listQuanHuyen = result ? result : []
+            if (vm.quanHuyen) {
+              vm.getXaPhuong(vm.quanHuyen)
+            }
           }
         })
       },
-      getXaPhuong (code) {
+      getXaPhuong (code, type) {
         let vm = this
         if (!code) {
           return
         }
-        let obj = vm.listQuanHuyen.find(function (item) {
-          return item.quanHuyenMa == code
-        })
+        let obj = ''
+        if (type) {
+          obj = vm.listQuanHuyenLamViec.find(function (item) {
+            return item.quanHuyenMa == code
+          })
+        } else {
+          obj = vm.listQuanHuyen.find(function (item) {
+            return item.quanHuyenMa == code
+          })
+        }
         if (!obj) {
           return
         }
@@ -1224,26 +1071,69 @@
           idParent: obj['id']
         }
         vm.$store.dispatch('getDanhMucXaPhuong', filter).then(function (result) {
-          vm.listXaPhuong = result ? result : []
+          if (type) {
+            vm.listXaPhuongLamViec = result ? result : []
+          } else {
+            vm.listXaPhuong = result ? result : []
+          }
         })
+      },
+      converLichLamViec (data, type) {
+        let vm = this
+        let dataConvert = ''
+        if (type) {
+          dataConvert = JSON.parse(data)
+        } else {
+          dataConvert = data
+        }
+        let ngayTuan = dataConvert.ngayTuan
+        let ngayThang = dataConvert.ngayThang
+        let timeStart = dataConvert.tuGio
+        let timeEnd = dataConvert.denGio
+        if (ngayTuan && ngayTuan.length) {
+          vm.weekDay.forEach((element, index) => {
+            let find = ngayTuan.filter(function (item) {
+              return item == element['value']
+            })
+            if (find && find.length) {
+              vm.weekDay[index]['selected'] = true
+            }
+          })
+        }
+        if (ngayThang && ngayThang.length) {
+          let dateInput = []
+          ngayThang.forEach((element, index) => {
+            let day = vm.parseDate(element)
+            dateInput.push(day)
+          })
+          vm.dates = dateInput
+        }
+        vm.timeStart = timeStart
+        vm.timeEnd = timeEnd
+        // if (timeStart) {
+        //   vm.timeStart = String(timeStart).slice(0,2) + ':' + String(timeStart).slice(2,4)
+        // }
+        // if (timeEnd) {
+        //   vm.timeEnd = String(timeEnd).slice(0,2) + ':' + String(timeEnd).slice(2,4)
+        // }
       },
       showDanhSach () {
         let vm = this
-        vm.$router.push({ path: '/pages/danh-sach-dang-ky-tiem-moi' })
+        vm.$router.push({ path: '/pages/danh-sach-di-duong-yeu-cau' })
       },
       nextFocus(id) {
         $("#"+id).focus()
       },
       formatHoTen () {
         let vm = this
-        if (vm.applicantInfo.HoVaTen) {
-          let str = String(vm.applicantInfo.HoVaTen).toLocaleLowerCase()
+        if (vm.applicantInfo.hoVaTen) {
+          let str = String(vm.applicantInfo.hoVaTen).toLocaleLowerCase()
           let arr = str.split(" ");
           for (var i = 0; i < arr.length; i++) {
             arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1)
           }
           let str2 = arr.join(" ")
-          vm.applicantInfo.HoVaTen = str2
+          vm.applicantInfo.hoVaTen = str2
         }
       },
       convertDate (dateInput) {
@@ -1272,23 +1162,7 @@
           vm.applicantDateFormatted = date.slice(0,2) + '/' + date.slice(2,4) + '/' + date.slice(4,8)
         } else {
           vm.applicantDateFormatted = ''
-        }
-        if (vm.applicantDateFormatted) {
-          if (lengthDate === 4) {
-            tuoi = currentYear - Number(vm.applicantDateFormatted)
-          } else {
-            let isoDate = vm.parseDate(vm.applicantDateFormatted)
-            tuoi = Math.floor((new Date() - new Date(isoDate).getTime()) / 3.15576e+10)
-          }
-          if (tuoi < 18) {
-            vm.$store.commit('SHOW_SNACKBAR', {
-              show: true,
-              text: 'Người đăng ký chưa đủ 18 tuổi',
-              color: 'error',
-            })
-          }
-        }
-        
+        }        
       },
       formatNgayTiem () {
         let vm = this
