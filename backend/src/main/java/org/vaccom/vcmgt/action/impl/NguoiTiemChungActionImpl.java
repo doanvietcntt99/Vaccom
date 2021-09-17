@@ -7,20 +7,22 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.vaccom.vcmgt.action.NguoiTiemChungAction;
 
 import org.vaccom.vcmgt.constant.EntityConstant;
-import org.vaccom.vcmgt.entity.CoSoYTe;
-import org.vaccom.vcmgt.entity.KhoaDangKy;
-import org.vaccom.vcmgt.entity.NguoiDung;
-import org.vaccom.vcmgt.entity.NguoiTiemChung;
+import org.vaccom.vcmgt.dto.MuiTiemChungDto;
+import org.vaccom.vcmgt.dto.NguoiTiemChungDto;
+import org.vaccom.vcmgt.dto.ResultSearchDto;
+import org.vaccom.vcmgt.entity.*;
 
 import org.vaccom.vcmgt.exception.ActionException;
 import org.vaccom.vcmgt.security.impl.RandomString;
 import org.vaccom.vcmgt.security.impl.StrongTextDataEncryptor;
 import org.vaccom.vcmgt.service.CoSoYTeService;
+import org.vaccom.vcmgt.service.MuiTiemChungService;
 import org.vaccom.vcmgt.service.NguoiDungService;
 import org.vaccom.vcmgt.service.NguoiTiemChungService;
 import org.vaccom.vcmgt.util.MessageUtil;
@@ -49,11 +51,83 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 	@Autowired
 	private CoSoYTeService coSoYTeService;
 
+	@Autowired
+	private MuiTiemChungService muiTiemChungService;
 
 	@Override
 	public long countAll() {
 
 		return nguoiTiemChungService.countAll();
+	}
+
+	@Override
+	public void addNguoiTiemChung(NguoiTiemChungDto nguoiTiemChungDto) throws Exception {
+		NguoiTiemChung nguoiTiemChung = new NguoiTiemChung();
+
+		long countUser = !nguoiTiemChungDto.cmtcccd.isEmpty()
+				? nguoiTiemChungService.countByCmtcccd(nguoiTiemChungDto.cmtcccd) : 0;
+
+		if(countUser == 0 && nguoiTiemChungDto.cmtcccd.isEmpty()) {
+			countUser = nguoiTiemChungService.countBySoDienThoai(nguoiTiemChungDto.sodienthoai);
+		}
+		boolean userHasButNotMuiTiem = false;
+
+		if (countUser > 0) {
+			return;
+		}
+
+		nguoiTiemChung.setKetQuaKiemTra("{\"nguoikiemtra\": \"auto\"}");
+		nguoiTiemChung.setDiaBanCoSoId(nguoiTiemChungDto.diabancosoid);
+		nguoiTiemChung.setHoVaTen(nguoiTiemChungDto.hovaten);
+		nguoiTiemChung.setNgaySinh(nguoiTiemChungDto.ngaysinh);
+		nguoiTiemChung.setGioiTinh(nguoiTiemChungDto.gioitinh);
+		nguoiTiemChung.setNhomDoiTuong(nguoiTiemChungDto.nhomdoituong);
+		nguoiTiemChung.setDonViCongTac(nguoiTiemChungDto.donvicongtac);
+		nguoiTiemChung.setSoDienThoai(nguoiTiemChungDto.sodienthoai);
+		nguoiTiemChung.setCmtcccd(nguoiTiemChungDto.cmtcccd);
+		nguoiTiemChung.setSoTheBHYT(nguoiTiemChungDto.sothebhyt);
+		nguoiTiemChung.setDiaChiNoiO(nguoiTiemChungDto.diachinoio);
+		nguoiTiemChung.setPhuongXaTen(nguoiTiemChungDto.phuongxaten);
+		nguoiTiemChung.setQuanHuyenTen(nguoiTiemChungDto.quanhuyenten);
+		nguoiTiemChung.setTinhThanhTen(nguoiTiemChungDto.tinhthanhten);
+		nguoiTiemChung.setTinhTrangDangKi(nguoiTiemChungDto.tinhtrangdangki);
+		nguoiTiemChung.setMaQR(VaccomUtil.generateQRCode("ntc", 6));
+
+		List<MuiTiemChungDto> listTiemChungDto = nguoiTiemChungDto.listMuiTieuChungDto;
+		NguoiTiemChung nguoiTiemChungCreated = nguoiTiemChungService.updateNguoiTiemChung(nguoiTiemChung);
+
+		if(nguoiTiemChungCreated == null) {
+			_log.error("Loi khong tao duoc nguoi dung voi cmt: " + nguoiTiemChungDto.cmtcccd);
+			return ;
+		}
+
+		long idNguoiTiem = nguoiTiemChungCreated.getId();
+		String tenNguoiTiem = nguoiTiemChungCreated.getHoVaTen();
+		String cmt = nguoiTiemChungCreated.getCmtcccd();
+
+		if(listTiemChungDto == null || listTiemChungDto.size() == 0) {
+			MuiTiemChung muiTiemChung = new MuiTiemChung();
+			muiTiemChung.setNguoiTiemChungId(idNguoiTiem);
+			muiTiemChung.setLanTiem(1);
+			muiTiemChung.setHoVaTen(tenNguoiTiem);
+			muiTiemChung.setCmtcccd(cmt);
+			muiTiemChungService.updateMuiTiemChung(muiTiemChung);
+			return;
+		}
+
+		int lanTiem = 1;
+		for(MuiTiemChungDto muiTiemChungDto: listTiemChungDto) {
+			MuiTiemChung muiTiemChung = new MuiTiemChung();
+			muiTiemChung.setNguoiTiemChungId(idNguoiTiem);
+			muiTiemChung.setHoVaTen(tenNguoiTiem);
+			muiTiemChung.setLanTiem(lanTiem);
+			muiTiemChung.setCmtcccd(cmt);
+			muiTiemChung.setNgayTiemChung(muiTiemChungDto.ngaytiem);
+			muiTiemChung.setSoLoThuoc(muiTiemChungDto.soLo);
+			muiTiemChung.setLoaiThuocTiem(muiTiemChungDto.tenThuoc);
+			lanTiem++;
+			muiTiemChungService.updateMuiTiemChung(muiTiemChung);
+		}
 	}
 
 	@Override
@@ -211,7 +285,8 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 		nguoiTiemChung.setTinhThanhTen(tinhThanhTen);
 		nguoiTiemChung.setTinhTrangDangKi(tinhTrangDangKi);
 		nguoiTiemChung.setMaQR(VaccomUtil.generateQRCode("ntc", 6));
-
+		CoSoYTe coSoYTe = coSoYTeService.findByMaCoSo(coSoYTeMa);
+		nguoiTiemChung.setCoSoYTeId(coSoYTe != null ? coSoYTe.getId() : 0);
 		return nguoiTiemChungService.updateNguoiTiemChung(nguoiTiemChung);
 	}
 
@@ -424,27 +499,67 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 
 	@Override
 	public long countNguoiTiemChung(String cmtcccd, Integer nhomdoituong, String ngaydangki, String hovaten,
-			Long diabancosoid, String cosoytema, Integer tinhtrangdangky, Integer kiemtratrung) {
+			Long diabancosoid, String cosoytema, Integer tinhtrangdangky, Integer kiemtratrung, String tinhthanhma, String tinhthanhten, String quanhuyenma
+			,  String quanhuyenten, String phuongxama, String phuongxaten) {
 		return nguoiTiemChungService.countNguoiTiemChung(cmtcccd, nhomdoituong, ngaydangki, hovaten, diabancosoid,
-				cosoytema, tinhtrangdangky, kiemtratrung);
+				cosoytema, tinhtrangdangky, kiemtratrung,  tinhthanhma,  tinhthanhten,  quanhuyenma
+				,   quanhuyenten,  phuongxama,  phuongxaten);
 	}
 
 	@Override
 	public List<NguoiTiemChung> searchNguoiTiemChung(String cmtcccd, Integer nhomdoituong, String ngaydangki,
 			String hovaten, Long diabancosoid, String cosoytema, Integer tinhtrangdangky, Integer kiemtratrung,
-			Integer page, Integer size) {
+			Integer page, Integer size, String tinhthanhma, String tinhthanhten, String quanhuyenma
+			,  String quanhuyenten, String phuongxama, String phuongxaten) {
 		return nguoiTiemChungService.searchNguoiTiemChung(cmtcccd, nhomdoituong, ngaydangki, hovaten, diabancosoid,
-				cosoytema, tinhtrangdangky, kiemtratrung, page, size);
+				cosoytema, tinhtrangdangky, kiemtratrung, page, size,  tinhthanhma,  tinhthanhten,  quanhuyenma
+				,   quanhuyenten,  phuongxama,  phuongxaten);
 	}
 
 	@Override
-	public void duyetDangKyMoi(String reqBody) {
+	public int duyetDangKyMoi(String reqBody) {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 
 			JsonNode bodyData = mapper.readTree(reqBody);
 
+			boolean isAutoAccept = bodyData.has(EntityConstant.IS_AUTO_ACCEPT) ? bodyData.get(EntityConstant.IS_AUTO_ACCEPT).booleanValue() : false;
+
+			if(isAutoAccept) {
+				int countAccept = bodyData.has(EntityConstant.COUNT_ACCEPT) ? bodyData.get(EntityConstant.COUNT_ACCEPT).intValue()  : -1;
+				if(countAccept < 0) {
+					return 0;
+				}
+
+				NguoiTiemChungDto dto = new NguoiTiemChungDto();
+				dto.tinhtrangdangki = VaccomUtil.MOIDANGKY;
+
+				List<NguoiTiemChung> listNguoiTiemChungDangCho = nguoiTiemChungService.searchListChuyenDangKyChinhThuc(dto);
+
+				if(listNguoiTiemChungDangCho == null) {
+					return 0;
+				}
+
+				long id;
+				int count = 0;
+				for(NguoiTiemChung nguoiTiemChung: listNguoiTiemChungDangCho) {
+					id = nguoiTiemChung.getId();
+					List<MuiTiemChung> lstMuiTiemChung = muiTiemChungService.findByNguoiTiemChungId(id);
+					if(lstMuiTiemChung != null ) {
+						if(lstMuiTiemChung.size() > countAccept) {
+							continue;
+						}
+					}
+					nguoiTiemChung.setTinhTrangDangKi(VaccomUtil.DANGKYCHINHTHUC);
+					nguoiTiemChungService.updateNguoiTiemChung(nguoiTiemChung);
+					count ++;
+				}
+
+				return count;
+			}
+
 			String ids = bodyData.has(EntityConstant.IDS) ? bodyData.get(EntityConstant.IDS).textValue()
+
 					: StringPool.BLANK;
 
 			List<String> lstId = StringUtil.split(ids);
@@ -458,18 +573,31 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 
 						if (nguoiTiemChung != null && nguoiTiemChung.getTinhTrangDangKi() == VaccomUtil.MOIDANGKY) {
 							try {
+								List<MuiTiemChung> lstMuiTiemChung = muiTiemChungService.findByNguoiTiemChungId(nguoiTiemChung.getId());
+								if(lstMuiTiemChung != null ) {
+									if(lstMuiTiemChung.size() == 1) {
+										if(lstMuiTiemChung.get(0).getLanTiem() > 1) {
+											continue;
+										}
+									}
+
+									if(lstMuiTiemChung.size() >=2) {
+										continue;
+									}
+								}
+
 								nguoiTiemChung.setTinhTrangDangKi(VaccomUtil.DANGKYCHINHTHUC);
-								
+
 								long countByCmtcccd = nguoiTiemChungService.countByCmtcccd(nguoiTiemChung.getCmtcccd(), VaccomUtil.DANGKYCHINHTHUC);
-								
+
 								if(countByCmtcccd > 0) {
 									nguoiTiemChung.setKiemTraTrung(VaccomUtil.KIEMTRACOTRUNG);
 								}else {
 									nguoiTiemChung.setKiemTraTrung(VaccomUtil.KIEMTRAKHONGTRUNG);
 								}
-								
-								nguoiTiemChungService.updateNguoiTiemChung(nguoiTiemChung);
 
+								nguoiTiemChungService.updateNguoiTiemChung(nguoiTiemChung);
+								/*
 								if (Validator.isNotNull(nguoiTiemChung.getCmtcccd())) {
 									NguoiDung nguoiDung = nguoiDungService
 											.findByTenDanNhap(nguoiTiemChung.getCmtcccd());
@@ -487,6 +615,7 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 										}
 									}
 								}
+								*/
 
 							} catch (Exception e) {
 								_log.warn(e.getMessage());
@@ -496,9 +625,11 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 
 				}
 			}
+			return 0;
 		} catch (Exception e) {
 			_log.error(e);
 		}
+		return 0;
 	}
 
 	@Override
@@ -524,18 +655,18 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 								&& nguoiTiemChung.getTinhTrangDangKi() == VaccomUtil.DANGKYCHINHTHUC) {
 							try {
 								
-								nguoiTiemChung.setTinhTrangDangKi(VaccomUtil.XOADANGKY);
+								nguoiTiemChung.setTinhTrangDangKi(VaccomUtil.MOIDANGKY);
 								nguoiTiemChungService.updateNguoiTiemChung(nguoiTiemChung);
 
-								if (Validator.isNotNull(nguoiTiemChung.getCmtcccd())) {
-									NguoiDung nguoiDung = nguoiDungService
-											.findByTenDanNhap(nguoiTiemChung.getCmtcccd());
-
-									if (nguoiDung != null && !nguoiDung.isKhoaTaiKhoan()) {
-										nguoiDung.setKhoaTaiKhoan(true);
-										nguoiDungService.updateNguoiDung(nguoiDung);
-									}
-								}
+//								if (Validator.isNotNull(nguoiTiemChung.getCmtcccd())) {
+//									NguoiDung nguoiDung = nguoiDungService
+//											.findByTenDanNhap(nguoiTiemChung.getCmtcccd());
+//
+//									if (nguoiDung != null && !nguoiDung.isKhoaTaiKhoan()) {
+//										nguoiDung.setKhoaTaiKhoan(true);
+//										nguoiDungService.updateNguoiDung(nguoiDung);
+//									}
+//								}
 
 							} catch (Exception e) {
 								_log.warn(e.getMessage());
@@ -618,6 +749,7 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 							try {
 								nguoiTiemChung.setTinhTrangDangKi(tinhTrangDangKi);
 								nguoiTiemChungService.updateNguoiTiemChung(nguoiTiemChung);
+								/*
 								if (Validator.isNotNull(nguoiTiemChung.getCmtcccd())) {
 									NguoiDung nguoiDung = nguoiDungService
 											.findByTenDanNhap(nguoiTiemChung.getCmtcccd());
@@ -641,6 +773,7 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 										}
 									}
 								}
+								*/
 								return nguoiTiemChung;
 							} catch (Exception e) {
 								_log.warn(e.getMessage());
@@ -660,6 +793,28 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 	@Override
 	public NguoiTiemChung findByMaQR(String MaQR) {
 		return nguoiTiemChungService.findByMaQR(MaQR);
+	}
+
+	@Override
+	public ResultSearchDto<NguoiTiemChung> search(NguoiTiemChungDto nguoiTiemChungDto, int page, int size) {
+		if(nguoiTiemChungDto.isSearchDaTiem) {
+			return nguoiTiemChungService.searchDaTiem(nguoiTiemChungDto, page, size);
+		}
+
+		if(nguoiTiemChungDto.isSearchOr) {
+			return nguoiTiemChungService.searchOr(nguoiTiemChungDto, page, size);
+		}
+		return nguoiTiemChungService.search(nguoiTiemChungDto, page, size);
+	}
+
+	@Override
+	public NguoiTiemChung findByCMTCCCD(String cmtcccd) {
+		return nguoiTiemChungService.findByCMTCCCD(cmtcccd);
+	}
+
+	@Override
+	public NguoiTiemChung update(NguoiTiemChung nguoiTiemChung) {
+		return nguoiTiemChungService.updateNguoiTiemChung(nguoiTiemChung);
 	}
 
 	@Override
@@ -719,7 +874,10 @@ public class NguoiTiemChungActionImpl implements NguoiTiemChungAction {
 		nguoiTiemChung.setTinhTrangDangKi(tinhTrangDangKi);
 		nguoiTiemChung.setMaQR(VaccomUtil.generateQRCode("ntc", 6));
 		nguoiTiemChung.setCoSoYTeId(coSoYTe != null ? coSoYTe.getId() : 0);
-		return nguoiTiemChungService.updateNguoiTiemChung(nguoiTiemChung);
+
+		nguoiTiemChungService.updateNguoiTiemChung(nguoiTiemChung);
+
+		return null;
 	}
 
 	private boolean addNguoiDung(String tenDangNhap, String matKhau, int quanTriHeThong, String hoVaTen, String chucDanh,

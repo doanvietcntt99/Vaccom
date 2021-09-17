@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS `t_uybannhandan` (
   `DiaChiHoatDong` text DEFAULT NULL,
   `NguoiDaiDien` varchar(256) DEFAULT NULL,
   `SoDienThoai` varchar(20) DEFAULT NULL,
+  `NotificationConfig` varchar(2048) DEFAULT NULL,
   PRIMARY KEY (`ID`)
 ) ;
 
@@ -65,8 +66,8 @@ CREATE TABLE IF NOT EXISTS `t_cosoyte` (
   `DiaChiCoSo` varchar(512) DEFAULT NULL,
   `NguoiDaiDien` varchar(128) DEFAULT NULL,
   `SoDienThoai` varchar(20) DEFAULT NULL,
-  `CoSoYTeChaId` bigint(20) DEFAULT NULL,
-  `UyBanNhanDanID` bigint(20) DEFAULT NULL,
+  `CoSoYTeChaId` bigint(20) DEFAULT 0,
+  `UyBanNhanDanID` bigint(20) DEFAULT 0,
   PRIMARY KEY (`ID`)
 ) ;
 
@@ -107,6 +108,9 @@ CREATE TABLE IF NOT EXISTS `t_lichtiemchung` (
   `SoMuiMotCa` int(8) NOT NULL,
   `BacSiKham` varchar(256) DEFAULT NULL,
   `SoDienThoai` varchar(256) DEFAULT NULL,
+  `UyBanNhanDanID` bigint(20) DEFAULT 0,
+  `TenCoSo` varchar(256) DEFAULT NULL,
+  `GioHenTiem` varchar(6) DEFAULT NULL,
   PRIMARY KEY (`ID`)
 ) ;
 
@@ -125,7 +129,7 @@ CREATE TABLE IF NOT EXISTS `t_muitiemchung` (
   `NoiSanXuat` varchar(64) DEFAULT NULL,
   `SoLoThuoc` varchar(64) DEFAULT NULL,
   `HanSuDung` varchar(10) DEFAULT NULL,
-  `CoSoYTeID` bigint(20) DEFAULT NULL,
+  `CoSoYTeID` bigint(20) DEFAULT 0,
   `NguoiTiemChungID` bigint(20) NOT NULL,
   PRIMARY KEY (`ID`)
 ) ;
@@ -134,7 +138,7 @@ CREATE TABLE IF NOT EXISTS `t_nguoitiemchung` (
   `ID` bigint(20) NOT NULL AUTO_INCREMENT,
   `HoVaTen` varchar(128) NOT NULL,
   `NgaySinh` varchar(10) DEFAULT NULL,
-  `GioiTinh` tinyint(4) DEFAULT NULL,
+  `GioiTinh` tinyint(4) DEFAULT 0,
   `CMTCCCD` varchar(20) DEFAULT NULL,
   `NhomDoiTuong` tinyint(4) DEFAULT 0,
   `DonViCongTac` varchar(256) DEFAULT NULL,
@@ -190,10 +194,23 @@ CREATE TABLE IF NOT EXISTS `t_giaydiduong` (
   `NoiOPhuongXaTen` varchar(128) DEFAULT NULL,
   `LichLamViec` text DEFAULT NULL,
   `UyBanNhanDanID` bigint(20) DEFAULT 0,
-  `NgayCap` varchar(8) DEFAULT NULL,
-  `ThoiHan` varchar(8) DEFAULT NULL,
+  `NgayCap` varchar(20) DEFAULT NULL,
+  `ThoiHan` varchar(20) DEFAULT NULL,
   `CheckSum` text DEFAULT NULL,
   `GhiChu` text DEFAULT NULL,
+  `Status` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`ID`)
+) ;
+
+
+
+CREATE TABLE IF NOT EXISTS `t_thuoc` (
+  `ID` bigint(20) NOT NULL AUTO_INCREMENT,
+  `TenThuoc` varchar(256) NOT NULL,
+  `MaThuoc` varchar(128) DEFAULT NULL,
+  `GhiChu` varchar(512) DEFAULT NULL,
+  `NgayNhap` varchar(10) DEFAULT NULL,
+  `NgayHetHan` varchar(10) DEFAULT NULL,
   `Status` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`ID`)
 ) ;
@@ -279,6 +296,32 @@ create table IF NOT EXISTS t_hangchothongbao (
     `payload` varchar(1024),
     `toEmail` varchar(255),
     `toTelNo` varchar(255),
+    `UyBanNhanDanID` bigint(20) DEFAULT 0,
+    `status` bigint(10) DEFAULT 0,
+    `mappingKey` bigint(10) DEFAULT 0,
+    `errorCodeZalo` bigint(3) DEFAULT 1,
+    `createDate` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     primary key (ID)
 );
+
+create table IF NOT EXISTS t_congdan (
+    `ID` bigint not null auto_increment,
+    `HoVaTen` varchar(128) NOT NULL,
+    `NgaySinh` varchar(10) DEFAULT NULL,
+    `GioiTinh` tinyint(4) DEFAULT 0,
+    `DiaChiThuongTru` varchar(512) DEFAULT NULL,
+    `TinhThanh_Ma` varchar(30) DEFAULT NULL,
+    `TinhThanh_Ten` varchar(128) DEFAULT NULL,
+    `QuanHuyen_Ma` varchar(30) DEFAULT NULL,
+    `QuanHuyen_Ten` varchar(128) DEFAULT NULL,
+    `PhuongXa_Ma` varchar(30) DEFAULT NULL,
+    `PhuongXa_Ten` varchar(128) DEFAULT NULL,
+    `CMTCCCD` varchar(20) DEFAULT NULL,
+    `NoiCap` varchar(128) DEFAULT NULL,
+    `NgayCap` varchar(20) DEFAULT NULL,
+    `SoMuiTiem` tinyint(4) DEFAULT 0,
+    primary key (ID)
+)
+
+
 

@@ -10,6 +10,7 @@ import org.vaccom.vcmgt.entity.GiayDiDuong;
 import org.vaccom.vcmgt.exception.ActionException;
 import org.vaccom.vcmgt.service.TransformService;
 import org.vaccom.vcmgt.util.MessageUtil;
+import org.vaccom.vcmgt.util.VaccomUtil;
 
 import java.util.Base64;
 
@@ -19,9 +20,6 @@ public class TransformServiceImpl implements TransformService {
 
     @Override
     public void paperTraffic(GiayDiDuong giayDiDuong, GiayDiDuongDto giayDiDuongDto, boolean isCreate) throws Exception{
-        if(giayDiDuongDto.maQR != null && !giayDiDuongDto.maQR.isEmpty()) {
-            giayDiDuong.setMaQR(giayDiDuongDto.maQR);
-        }
 
         if(giayDiDuongDto.hoVaTen != null && !giayDiDuongDto.hoVaTen.isEmpty()) {
             giayDiDuong.setHoVaTen(giayDiDuongDto.hoVaTen);
@@ -111,11 +109,18 @@ public class TransformServiceImpl implements TransformService {
 
             giayDiDuong.setChecksum(base64(giayDiDuongDto));
             giayDiDuong.setStatus(StatusConstant.PENDING);
+            giayDiDuong.setMaQR(VaccomUtil.generateQRCode("gdd", 6));
         }
 
         if(!isCreate) {
             if(giayDiDuongDto.status != StatusConstant.PENDING) {
                 giayDiDuong.setStatus(giayDiDuongDto.status);
+            }
+            if(giayDiDuong.getStatus() == StatusConstant.PENDING) {
+                if(giayDiDuongDto.lichLamViec != null) {
+                    String lichLamViecUpdate = calenderWorking(giayDiDuongDto);
+                    giayDiDuong.setLichLamViec(lichLamViecUpdate);
+                }
             }
         }
 
